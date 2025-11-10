@@ -24,7 +24,7 @@ export function SidebarLink({
     <Link 
       href={href}
       className={cn(
-        'group py-1 outline-none',
+        'group outline-none',
         canBeHidden ? 'hidden xs:flex' : 'flex',
         disabled && 'cursor-not-allowed'
       )}
@@ -32,10 +32,10 @@ export function SidebarLink({
     >
       <div
         className={cn(
-          `custom-button flex items-center justify-center gap-4 self-start p-2 text-xl transition 
+          `custom-button flex items-center gap-4 rounded-xl transition 
            duration-200 group-hover:bg-light-primary/10 group-focus-visible:ring-2 
            group-focus-visible:ring-[#878a8c] dark:group-hover:bg-dark-primary/10 
-           dark:group-focus-visible:ring-white xs:p-3 xl:pr-5`,
+           dark:group-focus-visible:ring-white xs:h-12 xs:w-12 xs:justify-center xs:p-3 xl:w-full xl:justify-start xl:px-4 xl:py-3`,
           isActive && 'font-bold'
         )}
       >
