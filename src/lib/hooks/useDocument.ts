@@ -1,10 +1,22 @@
-import { useEffect, useState } from 'react';
+/**
+ * useDocument Hook
+ * Fetches a single document from Supabase with realtime updates
+ * Based on Vite version pattern
+ */
+
+import { useState, useEffect } from 'react';
 import { supabase } from '@lib/supabase/client';
+
+export interface UseDocumentOptions {
+  disabled?: boolean;
+  includeUser?: boolean;
+  allowNull?: boolean;
+}
 
 export function useDocument<T>(
   table: string,
   id: string | null,
-  options?: { disabled?: boolean; includeUser?: boolean }
+  options?: UseDocumentOptions
 ): {
   data: T | null;
   loading: boolean;
@@ -23,16 +35,33 @@ export function useDocument<T>(
     const fetchData = async () => {
       try {
         setLoading(true);
+        
+        // Build select query - match Vite pattern
+        const selectQuery = options?.includeUser
+          ? '*, user:author_id(*)'
+          : '*';
+
         const { data: result, error: fetchError } = await supabase
           .from(table)
-          .select('*')
+          .select(selectQuery)
           .eq('id', id)
           .single();
 
-        if (fetchError) throw fetchError;
-        setData(result as T);
+        if (fetchError) {
+          if (options?.allowNull && fetchError.code === 'PGRST116') {
+            setData(null);
+            setError(null);
+          } else {
+            throw fetchError;
+          }
+        } else {
+          setData(result as T);
+          setError(null);
+        }
       } catch (err) {
+        console.error(`Error fetching document from ${table}:`, err);
         setError(err as Error);
+        setData(null);
       } finally {
         setLoading(false);
       }
@@ -40,7 +69,7 @@ export function useDocument<T>(
 
     fetchData();
 
-    // Subscribe to changes
+    // Subscribe to realtime updates
     const channel = supabase
       .channel(`${table}:${id}`)
       .on(
@@ -48,19 +77,20 @@ export function useDocument<T>(
         {
           event: '*',
           schema: 'public',
-          table,
+          table: table,
           filter: `id=eq.${id}`
         },
-        (payload) => {
-          setData(payload.new as T);
+        () => {
+          // Refetch on any change
+          fetchData();
         }
       )
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
-  }, [table, id, options?.disabled]);
+  }, [table, id, options?.disabled, options?.includeUser, options?.allowNull]);
 
   return { data, loading, error };
 }

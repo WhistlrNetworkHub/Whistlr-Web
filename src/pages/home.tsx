@@ -5,10 +5,10 @@ import { tweetsCollection } from '@lib/supabase/collections';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
+import { MainHeader } from '@components/home/main-header';
 import { MainContainer } from '@components/home/main-container';
 import { Input } from '@components/input/input';
 import { UpdateUsername } from '@components/home/update-username';
-import { MainHeader } from '@components/home/main-header';
 import { Tweet } from '@components/tweet/tweet';
 import { Loading } from '@components/ui/loading';
 import { Error } from '@components/ui/error';
@@ -20,7 +20,6 @@ export default function Home(): JSX.Element {
   const { data, loading, LoadMore } = useInfiniteScroll(
     tweetsCollection,
     {
-      filters: [{ column: 'parent_post_id', operator: 'is', value: null }],
       orderBy: { column: 'created_at', ascending: false }
     },
     { includeUser: true, allowNull: true, preserve: true }

@@ -9,10 +9,12 @@ export function UserFollowing({
 }: UserFollowingProps): JSX.Element | null {
   const { user } = useAuth();
 
-  const isOwner =
-    user?.id !== userTargetId && user?.followers.includes(userTargetId);
+  // TODO: Need to check if userTarget follows current user
+  // This requires querying the follows table
+  // For now, we'll hide this indicator until we implement the proper query
+  const isFollowing = false;
 
-  if (!isOwner) return null;
+  if (!isFollowing) return null;
 
   return (
     <p className='rounded bg-main-search-background px-1 text-xs'>

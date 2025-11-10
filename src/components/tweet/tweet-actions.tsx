@@ -1,33 +1,27 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-
 import { Popover } from '@headlessui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import cn from 'clsx';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@lib/context/auth-context';
 import { useModal } from '@lib/hooks/useModal';
-import { tweetsCollection } from '@lib/supabase/collections';
 import {
   removeTweet,
   manageReply,
-  manageFollow,
-  managePinnedTweet,
-  manageTotalTweets,
-  manageTotalPhotos
+  manageLike,
+  manageRetweet,
+  manageBookmark
 } from '@lib/supabase/utils';
-import { delayScroll, preventBubbling, sleep } from '@lib/utils';
+import { supabase } from '@lib/supabase/client';
 import { Modal } from '@components/modal/modal';
 import { ActionModal } from '@components/modal/action-modal';
 import { Button } from '@components/ui/button';
-import { ToolTip } from '@components/ui/tooltip';
 import { HeroIcon } from '@components/ui/hero-icon';
-import { CustomIcon } from '@components/ui/custom-icon';
+import { ToolTip } from '@components/ui/tooltip';
 import type { Variants } from 'framer-motion';
-import type { Tweet } from '@lib/types/tweet';
-import type { User } from '@lib/types/user';
 
-export const variants: Variants = {
+const variants: Variants = {
   initial: { opacity: 0, y: -25 },
   animate: {
     opacity: 1,
@@ -37,241 +31,251 @@ export const variants: Variants = {
   exit: { opacity: 0, y: -25, transition: { duration: 0.2 } }
 };
 
-type TweetActionsProps = Pick<Tweet, 'createdBy'> & {
+type TweetActionsProps = {
   isOwner: boolean;
   ownerId: string;
   tweetId: string;
   username: string;
-  parentId?: string;
-  hasImages: boolean;
-  viewTweet?: boolean;
+  userLikesId: number;
+  userRetweetsId: number;
+  tweetLink: string;
+  openModal?: () => void;
 };
-
-type PinModalData = Record<'title' | 'description' | 'mainBtnLabel', string>;
-
-const pinModalData: Readonly<PinModalData[]> = [
-  {
-    title: 'Pin Tweet to from profile?',
-    description:
-      'This will appear at the top of your profile and replace any previously pinned Tweet.',
-    mainBtnLabel: 'Pin'
-  },
-  {
-    title: 'Unpin Tweet from profile?',
-    description:
-      'This will no longer appear automatically at the top of your profile.',
-    mainBtnLabel: 'Unpin'
-  }
-];
 
 export function TweetActions({
   isOwner,
   ownerId,
   tweetId,
-  parentId,
   username,
-  hasImages,
-  viewTweet,
-  createdBy
+  userLikesId,
+  userRetweetsId,
+  tweetLink,
+  openModal
 }: TweetActionsProps): JSX.Element {
-  const { user, isAdmin } = useAuth();
-  const { push } = useRouter();
+  const { user } = useAuth();
+  const { open, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal();
+  const { back } = useRouter();
 
-  const {
-    open: removeOpen,
-    openModal: removeOpenModal,
-    closeModal: removeCloseModal
-  } = useModal();
+  const [liked, setLiked] = useState(false);
+  const [reposted, setReposted] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
-  const {
-    open: pinOpen,
-    openModal: pinOpenModal,
-    closeModal: pinCloseModal
-  } = useModal();
+  const userId = user?.id as string;
 
-  const { id: userId, following, pinnedTweet } = user as User;
+  // Check if user has liked/reposted/bookmarked this post
+  useMemo(async () => {
+    if (!userId) return;
 
-  const isInAdminControl = isAdmin && !isOwner;
-  const tweetIsPinned = pinnedTweet === tweetId;
+    // Check liked
+    const { data: likeData } = await supabase
+      .from('likes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('post_id', tweetId)
+      .single();
+    setLiked(!!likeData);
 
-  const handleRemove = async (): Promise<void> => {
-    if (viewTweet)
-      if (parentId) {
-        const parentSnapshot = await getDoc(doc(tweetsCollection, parentId));
-        if (parentSnapshot.exists()) {
-          await push(`/tweet/${parentId}`, undefined, { scroll: false });
-          delayScroll(200)();
-          await sleep(50);
-        } else await push('/home');
-      } else await push('/home');
+    // Check reposted
+    const { data: repostData } = await supabase
+      .from('reposts')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('original_post_id', tweetId)
+      .single();
+    setReposted(!!repostData);
 
-    await Promise.all([
-      removeTweet(tweetId),
-      manageTotalTweets('decrement', ownerId),
-      hasImages && manageTotalPhotos('decrement', createdBy),
-      parentId && manageReply('decrement', parentId)
-    ]);
+    // Check bookmarked
+    const { data: bookmarkData } = await supabase
+      .from('post_saves')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('post_id', tweetId)
+      .single();
+    setBookmarked(!!bookmarkData);
+  }, [userId, tweetId]);
 
-    toast.success(
-      `${isInAdminControl ? `@${username}'s` : 'Your'} Tweet was deleted`
-    );
+  const handleLike = async (): Promise<void> => {
+    if (!user) return;
 
-    removeCloseModal();
+    const action = liked ? 'unlike' : 'like';
+    setLiked(!liked);
+
+    try {
+      await manageLike(action, tweetId, userId);
+    } catch (error) {
+      console.error('Error managing like:', error);
+      setLiked(liked); // Revert on error
+      toast.error('Failed to update like');
+    }
   };
 
-  const handlePin = async (): Promise<void> => {
-    await managePinnedTweet(tweetIsPinned ? 'unpin' : 'pin', userId, tweetId);
-    toast.success(
-      `Your tweet was ${tweetIsPinned ? 'unpinned' : 'pinned'} to your profile`
-    );
-    pinCloseModal();
+  const handleRepost = async (): Promise<void> => {
+    if (!user) return;
+
+    const action = reposted ? 'unrepost' : 'repost';
+    setReposted(!reposted);
+
+    try {
+      await manageRetweet(action, tweetId, userId);
+      toast.success(reposted ? 'Repost removed' : 'Reposted!');
+    } catch (error) {
+      console.error('Error managing repost:', error);
+      setReposted(reposted); // Revert on error
+      toast.error('Failed to update repost');
+    }
   };
 
-  const handleFollow =
-    (closeMenu: () => void, ...args: Parameters<typeof manageFollow>) =>
-    async (): Promise<void> => {
-      const [type] = args;
+  const handleBookmark = async (): Promise<void> => {
+    if (!user) return;
 
-      closeMenu();
-      await manageFollow(...args);
+    const action = bookmarked ? 'unbookmark' : 'bookmark';
+    setBookmarked(!bookmarked);
 
-      toast.success(
-        `You ${type === 'follow' ? 'followed' : 'unfollowed'} @${username}`
-      );
-    };
+    try {
+      await manageBookmark(action, tweetId, userId);
+      toast.success(bookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
+    } catch (error) {
+      console.error('Error managing bookmark:', error);
+      setBookmarked(bookmarked); // Revert on error
+      toast.error('Failed to update bookmark');
+    }
+  };
 
-  const userIsFollowed = following.includes(createdBy);
-
-  const currentPinModalData = useMemo(
-    () => pinModalData[+tweetIsPinned],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [pinOpen]
-  );
+  const handleDelete = async (): Promise<void> => {
+    try {
+      await removeTweet(tweetId);
+      await manageReply('decrement', tweetId);
+      closeDeleteModal();
+      back();
+      toast.success('Tweet deleted');
+    } catch (error) {
+      console.error('Error deleting tweet:', error);
+      toast.error('Failed to delete tweet');
+    }
+  };
 
   return (
     <>
       <Modal
         modalClassName='max-w-xs bg-main-background w-full p-8 rounded-2xl'
-        open={removeOpen}
-        closeModal={removeCloseModal}
+        open={open}
+        closeModal={closeDeleteModal}
       >
         <ActionModal
           title='Delete Tweet?'
-          description={`This can’t be undone and it will be removed from ${
-            isInAdminControl ? `@${username}'s` : 'your'
-          } profile, the timeline of any accounts that follow ${
-            isInAdminControl ? `@${username}` : 'you'
-          }, and from Whistlr search results.`}
-          mainBtnClassName='bg-accent-red hover:bg-accent-red/90 active:bg-accent-red/75 accent-tab
-                            focus-visible:bg-accent-red/90'
+          description="This can't be undone and it will be removed from your profile, the timeline of any accounts that follow you, and from search results."
+          mainBtnClassName='bg-accent-red hover:bg-accent-red/90 active:bg-accent-red/75'
           mainBtnLabel='Delete'
-          focusOnMainBtn
-          action={handleRemove}
-          closeModal={removeCloseModal}
+          action={handleDelete}
+          closeModal={closeDeleteModal}
         />
       </Modal>
-      <Modal
-        modalClassName='max-w-xs bg-main-background w-full p-8 rounded-2xl'
-        open={pinOpen}
-        closeModal={pinCloseModal}
-      >
-        <ActionModal
-          {...currentPinModalData}
-          mainBtnClassName='bg-light-primary hover:bg-light-primary/90 active:bg-light-primary/80 dark:text-light-primary
-                            dark:bg-light-border dark:hover:bg-light-border/90 dark:active:bg-light-border/75'
-          focusOnMainBtn
-          action={handlePin}
-          closeModal={pinCloseModal}
-        />
-      </Modal>
-      <Popover>
-        {({ open, close }): JSX.Element => (
-          <>
-            <Popover.Button
-              as={Button}
-              className={cn(
-                `main-tab group group absolute top-2 right-2 p-2 
-                 hover:bg-accent-blue/10 focus-visible:bg-accent-blue/10
-                 focus-visible:!ring-accent-blue/80 active:bg-accent-blue/20`,
-                open && 'bg-accent-blue/10 [&>div>svg]:text-accent-blue'
-              )}
-            >
-              <div className='group relative'>
-                <HeroIcon
-                  className='h-5 w-5 text-light-secondary group-hover:text-accent-blue
-                             group-focus-visible:text-accent-blue dark:text-dark-secondary/80'
-                  iconName='EllipsisHorizontalIcon'
-                />
-                {!open && <ToolTip tip='More' />}
-              </div>
-            </Popover.Button>
-            <AnimatePresence>
-              {open && (
-                <Popover.Panel
-                  className='menu-container group absolute top-[50px] right-2 whitespace-nowrap text-light-primary 
-                             dark:text-dark-primary'
-                  as={motion.div}
-                  {...variants}
-                  static
-                >
-                  {(isAdmin || isOwner) && (
-                    <Popover.Button
-                      className='accent-tab flex w-full gap-3 rounded-md rounded-b-none p-4 text-accent-red
-                                 hover:bg-main-sidebar-background'
-                      as={Button}
-                      onClick={preventBubbling(removeOpenModal)}
-                    >
-                      <HeroIcon iconName='TrashIcon' />
-                      Delete
-                    </Popover.Button>
-                  )}
-                  {isOwner ? (
-                    <Popover.Button
-                      className='accent-tab flex w-full gap-3 rounded-md rounded-t-none p-4 hover:bg-main-sidebar-background'
-                      as={Button}
-                      onClick={preventBubbling(pinOpenModal)}
-                    >
-                      {tweetIsPinned ? (
-                        <>
-                          <CustomIcon iconName='PinOffIcon' />
-                          Unpin from profile
-                        </>
-                      ) : (
-                        <>
-                          <CustomIcon iconName='PinIcon' />
-                          Pin to your profile
-                        </>
-                      )}
-                    </Popover.Button>
-                  ) : userIsFollowed ? (
-                    <Popover.Button
-                      className='accent-tab flex w-full gap-3 rounded-md rounded-t-none p-4 hover:bg-main-sidebar-background'
-                      as={Button}
-                      onClick={preventBubbling(
-                        handleFollow(close, 'unfollow', userId, createdBy)
-                      )}
-                    >
-                      <HeroIcon iconName='UserMinusIcon' />
-                      Unfollow @{username}
-                    </Popover.Button>
-                  ) : (
-                    <Popover.Button
-                      className='accent-tab flex w-full gap-3 rounded-md rounded-t-none p-4 hover:bg-main-sidebar-background'
-                      as={Button}
-                      onClick={preventBubbling(
-                        handleFollow(close, 'follow', userId, createdBy)
-                      )}
-                    >
-                      <HeroIcon iconName='UserPlusIcon' />
-                      Follow @{username}
-                    </Popover.Button>
-                  )}
-                </Popover.Panel>
-              )}
-            </AnimatePresence>
-          </>
+      <div
+        className={cn(
+          'flex text-light-secondary inner:outline-none dark:text-dark-secondary',
+          openModal && 'mt-2'
         )}
-      </Popover>
+      >
+        {openModal && (
+          <Button
+            className='hover-animation group relative flex items-center gap-1 p-0
+                     outline-none transition-none hover:text-accent-blue focus-visible:text-accent-blue'
+            onClick={openModal}
+          >
+            <i className='relative rounded-full p-2 not-italic group-hover:bg-accent-blue/10 
+                         group-focus-visible:bg-accent-blue/10 group-focus-visible:ring-2 
+                         group-focus-visible:ring-accent-blue/80 group-active:bg-accent-blue/20'>
+              <HeroIcon className='h-5 w-5' iconName='ChatBubbleOvalLeftIcon' />
+            </i>
+            <p className='text-xs'>{userLikesId || 0}</p>
+            <ToolTip tip='Reply' />
+          </Button>
+        )}
+        <Button
+          className={cn(
+            'hover-animation group relative flex items-center gap-1 p-0 outline-none transition-none',
+            reposted
+              ? 'text-accent-green [&>i>svg]:[stroke-width:2px]'
+              : 'hover:text-accent-green focus-visible:text-accent-green'
+          )}
+          onClick={handleRepost}
+        >
+          <i className='relative rounded-full p-2 not-italic group-hover:bg-accent-green/10 
+                       group-focus-visible:bg-accent-green/10 group-focus-visible:ring-2 
+                       group-focus-visible:ring-accent-green/80 group-active:bg-accent-green/20'>
+            <HeroIcon className='h-5 w-5' iconName='ArrowPathRoundedSquareIcon' />
+          </i>
+          <p className='text-xs'>{userRetweetsId || 0}</p>
+          <ToolTip tip={reposted ? 'Undo Repost' : 'Repost'} />
+        </Button>
+        <Button
+          className={cn(
+            'hover-animation group relative flex items-center gap-1 p-0 outline-none transition-none',
+            liked
+              ? 'text-accent-pink [&>i>svg]:fill-accent-pink [&>i>svg]:[stroke-width:2px]'
+              : 'hover:text-accent-pink focus-visible:text-accent-pink'
+          )}
+          onClick={handleLike}
+        >
+          <i className='relative rounded-full p-2 not-italic group-hover:bg-accent-pink/10 
+                       group-focus-visible:bg-accent-pink/10 group-focus-visible:ring-2 
+                       group-focus-visible:ring-accent-pink/80 group-active:bg-accent-pink/20'>
+            <HeroIcon className='h-5 w-5' iconName='HeartIcon' />
+          </i>
+          <p className='text-xs'>{userLikesId || 0}</p>
+          <ToolTip tip={liked ? 'Unlike' : 'Like'} />
+        </Button>
+        <Popover className='relative'>
+          {({ open: shareOpen, close }): JSX.Element => (
+            <>
+              <Popover.Button
+                className='hover-animation group relative flex items-center gap-1 p-0 outline-none 
+                         transition-none hover:text-accent-blue focus-visible:text-accent-blue'
+              >
+                <i className='relative rounded-full p-2 not-italic group-hover:bg-accent-blue/10 
+                             group-focus-visible:bg-accent-blue/10 group-focus-visible:ring-2 
+                             group-focus-visible:ring-accent-blue/80 group-active:bg-accent-blue/20'>
+                  <HeroIcon className='h-5 w-5' iconName='ArrowUpTrayIcon' />
+                </i>
+                <ToolTip tip='Share' />
+              </Popover.Button>
+              <AnimatePresence>
+                {shareOpen && (
+                  <Popover.Panel
+                    className='menu-container absolute right-0 top-11 w-[200px] font-medium'
+                    as={motion.div}
+                    {...variants}
+                    static
+                  >
+                    <Popover.Button
+                      className='flex w-full gap-3 rounded-md rounded-b-none p-4 
+                               hover:bg-main-sidebar-background'
+                      onClick={handleBookmark}
+                    >
+                      <HeroIcon
+                        className='h-5 w-5'
+                        iconName={bookmarked ? 'BookmarkSlashIcon' : 'BookmarkIcon'}
+                        solid={bookmarked}
+                      />
+                      {bookmarked ? 'Remove Bookmark' : 'Bookmark'}
+                    </Popover.Button>
+                    {isOwner && (
+                      <Popover.Button
+                        className='flex w-full gap-3 rounded-md rounded-t-none p-4 text-accent-red
+                                 hover:bg-main-sidebar-background'
+                        onClick={openDeleteModal}
+                      >
+                        <HeroIcon className='h-5 w-5' iconName='TrashIcon' />
+                        Delete
+                      </Popover.Button>
+                    )}
+                  </Popover.Panel>
+                )}
+              </AnimatePresence>
+            </>
+          )}
+        </Popover>
+      </div>
     </>
   );
 }

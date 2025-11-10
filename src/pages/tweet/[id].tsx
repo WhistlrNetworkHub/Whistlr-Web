@@ -1,21 +1,19 @@
 import { useRef } from 'react';
 import { useRouter } from 'next/router';
 import { AnimatePresence } from 'framer-motion';
-
-import { tweetsCollection } from '@lib/supabase/collections';
-import { useCollection } from '@lib/hooks/useCollection';
 import { useDocument } from '@lib/hooks/useDocument';
+import { useCollection } from '@lib/hooks/useCollection';
 import { isPlural } from '@lib/utils';
+import { tweetsCollection, commentsCollection } from '@lib/supabase/collections';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
-import { MainContainer } from '@components/home/main-container';
-import { MainHeader } from '@components/home/main-header';
-import { Tweet } from '@components/tweet/tweet';
-import { ViewTweet } from '@components/view/view-tweet';
 import { SEO } from '@components/common/seo';
-import { Loading } from '@components/ui/loading';
+import { MainHeader } from '@components/home/main-header';
+import { MainContainer } from '@components/home/main-container';
 import { Error } from '@components/ui/error';
-import { ViewParentTweet } from '@components/view/view-parent-tweet';
+import { Loading } from '@components/ui/loading';
+import { Tweet } from '@components/tweet/tweet';
+import { Input } from '@components/input/input';
 import type { ReactElement, ReactNode } from 'react';
 
 export default function TweetId(): JSX.Element {
@@ -25,68 +23,90 @@ export default function TweetId(): JSX.Element {
   } = useRouter();
 
   const { data: tweetData, loading: tweetLoading } = useDocument(
-    doc(tweetsCollection, id as string),
+    tweetsCollection,
+    id as string,
     { includeUser: true, allowNull: true }
   );
 
   const viewTweetRef = useRef<HTMLElement>(null);
 
-  const { data: repliesData, loading: repliesLoading } = useCollection(
-    query(
-      tweetsCollection,
-      where('parent.id', '==', id),
-      orderBy('createdAt', 'desc')
-    ),
-    { includeUser: true, allowNull: true }
+  // Fetch comments for this post
+  const { data: commentsData, loading: commentsLoading } = useCollection(
+    commentsCollection,
+    {
+      filter: { column: 'post_id', value: id },
+      orderBy: { column: 'created_at', ascending: false },
+      includeUser: true,
+      allowNull: true
+    }
   );
 
-  const { text, images } = tweetData ?? {};
+  const { content, media_urls } = tweetData ?? {};
 
-  const imagesLength = images?.length ?? 0;
-  const parentId = tweetData?.parent?.id;
+  // Parse media_urls
+  let images: any = null;
+  if (media_urls) {
+    try {
+      images = typeof media_urls === 'string' ? JSON.parse(media_urls) : media_urls;
+    } catch {
+      images = media_urls;
+    }
+  }
+
+  const imagesLength = Array.isArray(images) ? images.length : 0;
 
   const pageTitle = tweetData
-    ? `${tweetData.user.name} on Whistlr: "${text ?? ''}${
-        images ? ` (${imagesLength} image${isPlural(imagesLength)})` : ''
-      }" / Whistlr`
+    ? `${tweetData.user?.full_name || tweetData.user?.username || 'User'} on Whistlr: "${
+        content ?? ''
+      }" ${
+        imagesLength > 1
+          ? `(${imagesLength} image${isPlural(imagesLength)})`
+          : ''
+      }`
     : null;
 
   return (
-    <MainContainer className='!pb-[1280px]'>
-      <MainHeader
-        useActionButton
-        title={parentId ? 'Thread' : 'Tweet'}
-        action={back}
+    <MainContainer>
+      <SEO
+        title={pageTitle ?? 'Tweet / Whistlr'}
+        description={content ?? undefined}
+        image={imagesLength === 1 && images ? images[0] : undefined}
       />
+      <MainHeader useActionButton title='Tweet' action={back} />
       <section>
         {tweetLoading ? (
           <Loading className='mt-5' />
         ) : !tweetData ? (
           <>
-            <SEO title='Tweet not found / Whistlr' />
             <Error message='Tweet not found' />
+            {commentsData && (
+              <p className='m-4 text-center text-sm text-light-secondary dark:text-dark-secondary'>
+                But you can see other replies
+              </p>
+            )}
           </>
         ) : (
           <>
-            {pageTitle && <SEO title={pageTitle} />}
-            {parentId && (
-              <ViewParentTweet
-                parentId={parentId}
-                viewTweetRef={viewTweetRef}
-              />
-            )}
-            <ViewTweet viewTweetRef={viewTweetRef} {...tweetData} />
-            {tweetData &&
-              (repliesLoading ? (
-                <Loading className='mt-5' />
-              ) : (
-                <AnimatePresence mode='popLayout'>
-                  {repliesData?.map((tweet) => (
-                    <Tweet {...tweet} key={tweet.id} />
-                  ))}
-                </AnimatePresence>
-              ))}
+            <Tweet {...tweetData} modal />
+            <Input reply parent={{ id: id as string, username: tweetData.user?.username || '' }} />
           </>
+        )}
+        {!tweetLoading && tweetData && (
+          <section className='mt-0.5' ref={viewTweetRef}>
+            {commentsLoading ? (
+              <Loading className='mt-5' />
+            ) : commentsData && commentsData.length > 0 ? (
+              <AnimatePresence mode='popLayout'>
+                {commentsData.map((comment) => (
+                  <Tweet {...comment} key={comment.id} />
+                ))}
+              </AnimatePresence>
+            ) : (
+              <p className='m-4 text-center text-sm text-light-secondary dark:text-dark-secondary'>
+                No replies yet
+              </p>
+            )}
+          </section>
         )}
       </section>
     </MainContainer>

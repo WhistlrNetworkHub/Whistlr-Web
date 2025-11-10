@@ -84,9 +84,9 @@
 
 7. **Run the development server**
 
-   ```bash
-   npm run dev
-   ```
+         ```bash
+         npm run dev
+         ```
 
    Open [http://localhost:4422](http://localhost:4422)
 
@@ -94,7 +94,7 @@
 
 The app is optimized for deployment on Vercel:
 
-```bash
+         ```bash
 npm run build
 npm start
 ```

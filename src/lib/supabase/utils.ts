@@ -1,383 +1,472 @@
-import { supabase } from './client';
-import type { EditableUserData } from '@lib/types/user';
-import type { FilesWithId, ImagesPreview } from '@lib/types/file';
-import type { Theme, Accent } from '@lib/types/theme';
+/**
+ * Supabase Utility Functions
+ * Replaces Firebase utilities with Supabase equivalents
+ * Based on Vite and iOS patterns
+ */
 
+import { supabase } from './client';
+import type { User } from '@lib/types/user';
+
+/**
+ * Check if username is available
+ */
 export async function checkUsernameAvailability(
   username: string
 ): Promise<boolean> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
-    .select('id')
+    .select('username')
     .eq('username', username)
-    .limit(1);
-  
-  return !data || data.length === 0;
+    .single();
+
+  return !data && !error;
 }
 
+/**
+ * Get collection count
+ */
 export async function getCollectionCount(
   table: string,
-  filter?: { column: string; value: any }
+  column?: string,
+  value?: any
 ): Promise<number> {
   let query = supabase.from(table).select('*', { count: 'exact', head: true });
-  
-  if (filter) {
-    query = query.eq(filter.column, filter.value);
+
+  if (column && value !== undefined) {
+    query = query.eq(column, value);
   }
-  
-  const { count } = await query;
-  return count || 0;
+
+  const { count, error } = await query;
+
+  if (error) {
+    console.error(`Error getting count from ${table}:`, error);
+    return 0;
+  }
+
+  return count ?? 0;
 }
 
+/**
+ * Update user data
+ */
 export async function updateUserData(
   userId: string,
-  userData: EditableUserData
+  data: Partial<User>
 ): Promise<void> {
-  await supabase
+  const { error } = await supabase
     .from('profiles')
-    .update({
-      ...userData,
-      updatedAt: new Date().toISOString()
-    })
+    .update({ ...data, updated_at: new Date().toISOString() })
     .eq('id', userId);
+
+  if (error) {
+    console.error('Error updating user data:', error);
+    throw error;
+  }
 }
 
+/**
+ * Update user theme (stored in profile)
+ */
 export async function updateUserTheme(
   userId: string,
-  themeData: { theme?: Theme; accent?: Accent }
+  theme: 'light' | 'dark' | 'auto'
 ): Promise<void> {
-  await supabase
-    .from('profiles')
-    .update(themeData)
-    .eq('id', userId);
+  await updateUserData(userId, { theme_preference: theme });
 }
 
+/**
+ * Update username
+ */
 export async function updateUsername(
   userId: string,
-  username?: string
+  username: string
 ): Promise<void> {
-  await supabase
-    .from('profiles')
-    .update({
-      ...(username && { username }),
-      updatedAt: new Date().toISOString()
-    })
-    .eq('id', userId);
+  const isAvailable = await checkUsernameAvailability(username);
+
+  if (!isAvailable) {
+    throw new Error('Username is already taken');
+  }
+
+  await updateUserData(userId, { username });
 }
 
-export async function managePinnedTweet(
-  type: 'pin' | 'unpin',
+/**
+ * Manage pinned post
+ */
+export async function managePinnedPost(
   userId: string,
-  tweetId: string
+  postId: string,
+  pin: boolean
 ): Promise<void> {
-  await supabase
-    .from('profiles')
-    .update({
-      updatedAt: new Date().toISOString(),
-      pinnedTweet: type === 'pin' ? tweetId : null
-    })
-    .eq('id', userId);
+  if (pin) {
+    // Unpin all other posts first
+    await supabase
+      .from('posts')
+      .update({ is_pinned: false })
+      .eq('author_id', userId);
+
+    // Pin this post
+    await supabase
+      .from('posts')
+      .update({ is_pinned: true })
+      .eq('id', postId);
+  } else {
+    // Unpin this post
+    await supabase
+      .from('posts')
+      .update({ is_pinned: false })
+      .eq('id', postId);
+  }
 }
 
+/**
+ * Manage follow relationship
+ */
 export async function manageFollow(
-  type: 'follow' | 'unfollow',
+  action: 'follow' | 'unfollow',
   userId: string,
   targetUserId: string
 ): Promise<void> {
-  const { data: user } = await supabase
-    .from('profiles')
-    .select('following')
-    .eq('id', userId)
-    .single();
+  if (action === 'follow') {
+    const { error } = await supabase.from('follows').insert({
+      follower_id: userId,
+      following_id: targetUserId
+    });
 
-  const { data: targetUser } = await supabase
-    .from('profiles')
-    .select('followers')
-    .eq('id', targetUserId)
-    .single();
+    if (error) throw error;
 
-  if (!user || !targetUser) return;
-
-  const following = user.following || [];
-  const followers = targetUser.followers || [];
-
-  if (type === 'follow') {
+    // Increment counts
     await Promise.all([
-      supabase
-        .from('profiles')
-        .update({
-          following: [...following, targetUserId],
-          updatedAt: new Date().toISOString()
-        })
-        .eq('id', userId),
-      supabase
-        .from('profiles')
-        .update({
-          followers: [...followers, userId],
-          updatedAt: new Date().toISOString()
-        })
-        .eq('id', targetUserId)
+      supabase.rpc('increment', {
+        table_name: 'profiles',
+        row_id: userId,
+        column_name: 'following_count'
+      }),
+      supabase.rpc('increment', {
+        table_name: 'profiles',
+        row_id: targetUserId,
+        column_name: 'followers_count'
+      })
     ]);
   } else {
+    const { error } = await supabase
+      .from('follows')
+      .delete()
+      .eq('follower_id', userId)
+      .eq('following_id', targetUserId);
+
+    if (error) throw error;
+
+    // Decrement counts
     await Promise.all([
-      supabase
-        .from('profiles')
-        .update({
-          following: following.filter((id) => id !== targetUserId),
-          updatedAt: new Date().toISOString()
-        })
-        .eq('id', userId),
-      supabase
-        .from('profiles')
-        .update({
-          followers: followers.filter((id) => id !== userId),
-          updatedAt: new Date().toISOString()
-        })
-        .eq('id', targetUserId)
+      supabase.rpc('decrement', {
+        table_name: 'profiles',
+        row_id: userId,
+        column_name: 'following_count'
+      }),
+      supabase.rpc('decrement', {
+        table_name: 'profiles',
+        row_id: targetUserId,
+        column_name: 'followers_count'
+      })
     ]);
   }
 }
 
-export async function removeTweet(tweetId: string): Promise<void> {
-  await supabase.from('posts').delete().eq('id', tweetId);
+/**
+ * Remove post
+ */
+export async function removeTweet(postId: string): Promise<void> {
+  const { error } = await supabase
+    .from('posts')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', postId);
+
+  if (error) {
+    console.error('Error deleting post:', error);
+    throw error;
+  }
 }
 
+/**
+ * Upload images to Supabase Storage
+ */
 export async function uploadImages(
   userId: string,
-  files: FilesWithId
-): Promise<ImagesPreview | null> {
-  if (!files.length) return null;
+  images: File[]
+): Promise<string[] | null> {
+  if (!images || images.length === 0) return null;
 
-  const imagesPreview = await Promise.all(
-    files.map(async (file) => {
-      const { id, name: alt, type } = file;
-      const filePath = `images/${userId}/${id}`;
+  const uploadedUrls: string[] = [];
 
-      const { error: uploadError } = await supabase.storage
-        .from('posts')
-        .upload(filePath, file);
+  for (const image of images) {
+    const fileExt = image.name.split('.').pop();
+    const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
-      if (uploadError) throw uploadError;
+    const { data, error } = await supabase.storage
+      .from('post-media')
+      .upload(fileName, image);
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('posts')
-        .getPublicUrl(filePath);
+    if (error) {
+      console.error('Error uploading image:', error);
+      continue;
+    }
 
-      return { id, src: publicUrl, alt, type };
-    })
-  );
+    const { data: urlData } = supabase.storage
+      .from('post-media')
+      .getPublicUrl(fileName);
 
-  return imagesPreview;
+    uploadedUrls.push(urlData.publicUrl);
+  }
+
+  return uploadedUrls.length > 0 ? uploadedUrls : null;
 }
 
+/**
+ * Manage reply count
+ */
 export async function manageReply(
-  type: 'increment' | 'decrement',
-  tweetId: string
+  action: 'increment' | 'decrement',
+  postId: string
 ): Promise<void> {
-  const { data: tweet } = await supabase
+  const { data: post } = await supabase
     .from('posts')
-    .select('userReplies')
-    .eq('id', tweetId)
+    .select('comments_count')
+    .eq('id', postId)
     .single();
 
-  if (!tweet) return;
+  if (post) {
+    const newCount = action === 'increment' 
+      ? (post.comments_count ?? 0) + 1
+      : Math.max(0, (post.comments_count ?? 0) - 1);
 
-  await supabase
-    .from('posts')
-    .update({
-      userReplies: tweet.userReplies + (type === 'increment' ? 1 : -1),
-      updatedAt: new Date().toISOString()
-    })
-    .eq('id', tweetId);
-}
-
-export async function manageTotalTweets(
-  type: 'increment' | 'decrement',
-  userId: string
-): Promise<void> {
-  const { data: user } = await supabase
-    .from('profiles')
-    .select('totalTweets')
-    .eq('id', userId)
-    .single();
-
-  if (!user) return;
-
-  await supabase
-    .from('profiles')
-    .update({
-      totalTweets: user.totalTweets + (type === 'increment' ? 1 : -1),
-      updatedAt: new Date().toISOString()
-    })
-    .eq('id', userId);
-}
-
-export async function manageTotalPhotos(
-  type: 'increment' | 'decrement',
-  userId: string
-): Promise<void> {
-  const { data: user } = await supabase
-    .from('profiles')
-    .select('totalPhotos')
-    .eq('id', userId)
-    .single();
-
-  if (!user) return;
-
-  await supabase
-    .from('profiles')
-    .update({
-      totalPhotos: user.totalPhotos + (type === 'increment' ? 1 : -1),
-      updatedAt: new Date().toISOString()
-    })
-    .eq('id', userId);
-}
-
-export function manageRetweet(
-  type: 'retweet' | 'unretweet',
-  userId: string,
-  tweetId: string
-) {
-  return async (): Promise<void> => {
-    const [{ data: tweet }, { data: stats }] = await Promise.all([
-      supabase
-        .from('posts')
-        .select('userRetweets')
-        .eq('id', tweetId)
-        .single(),
-      supabase
-        .from('user_stats')
-        .select('tweets')
-        .eq('userId', userId)
-        .single()
-    ]);
-
-    if (!tweet || !stats) return;
-
-    const userRetweets = tweet.userRetweets || [];
-    const tweets = stats.tweets || [];
-
-    if (type === 'retweet') {
-      await Promise.all([
-        supabase
-          .from('posts')
-          .update({
-            userRetweets: [...userRetweets, userId],
-            updatedAt: new Date().toISOString()
-          })
-          .eq('id', tweetId),
-        supabase
-          .from('user_stats')
-          .update({
-            tweets: [...tweets, tweetId],
-            updatedAt: new Date().toISOString()
-          })
-          .eq('userId', userId)
-      ]);
-    } else {
-      await Promise.all([
-        supabase
-          .from('posts')
-          .update({
-            userRetweets: userRetweets.filter((id) => id !== userId),
-            updatedAt: new Date().toISOString()
-          })
-          .eq('id', tweetId),
-        supabase
-          .from('user_stats')
-          .update({
-            tweets: tweets.filter((id) => id !== tweetId),
-            updatedAt: new Date().toISOString()
-          })
-          .eq('userId', userId)
-      ]);
-    }
-  };
-}
-
-export function manageLike(
-  type: 'like' | 'unlike',
-  userId: string,
-  tweetId: string
-) {
-  return async (): Promise<void> => {
-    const [{ data: tweet }, { data: stats }] = await Promise.all([
-      supabase
-        .from('posts')
-        .select('userLikes')
-        .eq('id', tweetId)
-        .single(),
-      supabase
-        .from('user_stats')
-        .select('likes')
-        .eq('userId', userId)
-        .single()
-    ]);
-
-    if (!tweet || !stats) return;
-
-    const userLikes = tweet.userLikes || [];
-    const likes = stats.likes || [];
-
-    if (type === 'like') {
-      await Promise.all([
-        supabase
-          .from('posts')
-          .update({
-            userLikes: [...userLikes, userId],
-            updatedAt: new Date().toISOString()
-          })
-          .eq('id', tweetId),
-        supabase
-          .from('user_stats')
-          .update({
-            likes: [...likes, tweetId],
-            updatedAt: new Date().toISOString()
-          })
-          .eq('userId', userId)
-      ]);
-    } else {
-      await Promise.all([
-        supabase
-          .from('posts')
-          .update({
-            userLikes: userLikes.filter((id) => id !== userId),
-            updatedAt: new Date().toISOString()
-          })
-          .eq('id', tweetId),
-        supabase
-          .from('user_stats')
-          .update({
-            likes: likes.filter((id) => id !== tweetId),
-            updatedAt: new Date().toISOString()
-          })
-          .eq('userId', userId)
-      ]);
-    }
-  };
-}
-
-export async function manageBookmark(
-  type: 'bookmark' | 'unbookmark',
-  userId: string,
-  tweetId: string
-): Promise<void> {
-  if (type === 'bookmark') {
-    await supabase.from('bookmarks').insert({
-      userId,
-      tweetId,
-      createdAt: new Date().toISOString()
-    });
-  } else {
     await supabase
-      .from('bookmarks')
-      .delete()
-      .eq('userId', userId)
-      .eq('tweetId', tweetId);
+      .from('posts')
+      .update({ comments_count: newCount })
+      .eq('id', postId);
   }
 }
 
-export async function clearAllBookmarks(userId: string): Promise<void> {
-  await supabase.from('bookmarks').delete().eq('userId', userId);
+/**
+ * Manage total tweets count
+ */
+export async function manageTotalTweets(
+  action: 'increment' | 'decrement',
+  userId: string
+): Promise<void> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('posts_count')
+    .eq('id', userId)
+    .single();
+
+  if (profile) {
+    const newCount = action === 'increment'
+      ? (profile.posts_count ?? 0) + 1
+      : Math.max(0, (profile.posts_count ?? 0) - 1);
+
+    await supabase
+      .from('profiles')
+      .update({ posts_count: newCount })
+      .eq('id', userId);
+  }
 }
 
+/**
+ * Manage total photos count (not in schema, skip for now)
+ */
+export async function manageTotalPhotos(
+  action: 'increment' | 'decrement',
+  userId: string
+): Promise<void> {
+  // Photos count not in schema, could add custom field if needed
+  console.log('manageTotalPhotos:', action, userId);
+}
+
+/**
+ * Manage like on post
+ */
+export async function manageLike(
+  action: 'like' | 'unlike',
+  postId: string,
+  userId: string
+): Promise<void> {
+  if (action === 'like') {
+    // Add like
+    const { error } = await supabase.from('likes').insert({
+      user_id: userId,
+      post_id: postId
+    });
+
+    if (error && error.code !== '23505') { // Ignore duplicate key error
+      throw error;
+    }
+
+    // Increment count
+    const { data: post } = await supabase
+      .from('posts')
+      .select('likes_count')
+      .eq('id', postId)
+      .single();
+
+    if (post) {
+      await supabase
+        .from('posts')
+        .update({ likes_count: (post.likes_count ?? 0) + 1 })
+        .eq('id', postId);
+    }
+  } else {
+    // Remove like
+    const { error } = await supabase
+      .from('likes')
+      .delete()
+      .eq('user_id', userId)
+      .eq('post_id', postId);
+
+    if (error) throw error;
+
+    // Decrement count
+    const { data: post } = await supabase
+      .from('posts')
+      .select('likes_count')
+      .eq('id', postId)
+      .single();
+
+    if (post) {
+      await supabase
+        .from('posts')
+        .update({ likes_count: Math.max(0, (post.likes_count ?? 0) - 1) })
+        .eq('id', postId);
+    }
+  }
+}
+
+/**
+ * Manage repost (uses reposts table)
+ */
+export async function manageRetweet(
+  action: 'repost' | 'unrepost',
+  postId: string,
+  userId: string
+): Promise<void> {
+  if (action === 'repost') {
+    // Add repost
+    const { error } = await supabase.from('reposts').insert({
+      user_id: userId,
+      original_post_id: postId,
+      repost_type: 'simple'
+    });
+
+    if (error && error.code !== '23505') {
+      throw error;
+    }
+
+    // Increment count
+    const { data: post } = await supabase
+      .from('posts')
+      .select('reposts_count')
+      .eq('id', postId)
+      .single();
+
+    if (post) {
+      await supabase
+        .from('posts')
+        .update({ reposts_count: (post.reposts_count ?? 0) + 1 })
+        .eq('id', postId);
+    }
+  } else {
+    // Remove repost
+    const { error } = await supabase
+      .from('reposts')
+      .delete()
+      .eq('user_id', userId)
+      .eq('original_post_id', postId);
+
+    if (error) throw error;
+
+    // Decrement count
+    const { data: post } = await supabase
+      .from('posts')
+      .select('reposts_count')
+      .eq('id', postId)
+      .single();
+
+    if (post) {
+      await supabase
+        .from('posts')
+        .update({ reposts_count: Math.max(0, (post.reposts_count ?? 0) - 1) })
+        .eq('id', postId);
+    }
+  }
+}
+
+/**
+ * Manage bookmark
+ */
+export async function manageBookmark(
+  action: 'bookmark' | 'unbookmark',
+  postId: string,
+  userId: string
+): Promise<void> {
+  if (action === 'bookmark') {
+    const { error } = await supabase.from('post_saves').insert({
+      user_id: userId,
+      post_id: postId
+    });
+
+    if (error && error.code !== '23505') {
+      throw error;
+    }
+
+    // Increment saves count
+    const { data: post } = await supabase
+      .from('posts')
+      .select('saves_count')
+      .eq('id', postId)
+      .single();
+
+    if (post) {
+      await supabase
+        .from('posts')
+        .update({ saves_count: (post.saves_count ?? 0) + 1 })
+        .eq('id', postId);
+    }
+  } else {
+    const { error } = await supabase
+      .from('post_saves')
+      .delete()
+      .eq('user_id', userId)
+      .eq('post_id', postId);
+
+    if (error) throw error;
+
+    // Decrement saves count
+    const { data: post } = await supabase
+      .from('posts')
+      .select('saves_count')
+      .eq('id', postId)
+      .single();
+
+    if (post) {
+      await supabase
+        .from('posts')
+        .update({ saves_count: Math.max(0, (post.saves_count ?? 0) - 1) })
+        .eq('id', postId);
+    }
+  }
+}
+
+/**
+ * Clear all bookmarks for a user
+ */
+export async function clearAllBookmarks(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('post_saves')
+    .delete()
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error clearing bookmarks:', error);
+    throw error;
+  }
+}

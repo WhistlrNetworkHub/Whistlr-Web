@@ -1,188 +1,196 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+/**
+ * useInfiniteScroll Hook
+ * Implements cursor-based infinite scrolling for posts
+ * Based on Vite version pattern
+ */
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback, JSX } from 'react';
 import { supabase } from '@lib/supabase/client';
 import { Loading } from '@components/ui/loading';
-import type { User } from '@lib/types/user';
+import { motion } from 'framer-motion';
 
-type FilterOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is' | 'in';
+interface QueryOptions {
+  orderBy?: {
+    column: string;
+    ascending?: boolean;
+  };
+  filters?: Array<{
+    column: string;
+    operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'is' | 'in';
+    value: any;
+  }>;
+}
 
-type QueryFilter = {
-  column: string;
-  operator: FilterOperator;
-  value: any;
-};
-
-type QueryOptions = {
-  filters?: QueryFilter[];
-  orderBy?: { column: string; ascending?: boolean };
-};
-
-type UseCollectionOptions = {
+interface UseCollectionOptions {
   includeUser?: boolean;
   allowNull?: boolean;
   preserve?: boolean;
   disabled?: boolean;
-};
+}
 
-type InfiniteScroll<T> = {
+interface InfiniteScrollOptions {
+  initialSize?: number;
+  stepSize?: number;
+  marginBottom?: number;
+}
+
+interface InfiniteScroll<T> {
   data: T[] | null;
   loading: boolean;
   LoadMore: () => JSX.Element;
-};
+}
 
-type InfiniteScrollWithUser<T> = {
-  data: (T & { user: User })[] | null;
-  loading: boolean;
-  LoadMore: () => JSX.Element;
-};
+interface InfiniteScrollWithUser<T> extends InfiniteScroll<T> {}
 
-export function useInfiniteScroll<T>(
-  tableName: string,
-  queryOptions: QueryOptions,
-  fetchOptions: UseCollectionOptions & { includeUser: true },
-  options?: { initialSize?: number; stepSize?: number; marginBottom?: number }
-): InfiniteScrollWithUser<T>;
-
-export function useInfiniteScroll<T>(
-  tableName: string,
-  queryOptions: QueryOptions,
-  fetchOptions?: UseCollectionOptions,
-  options?: { initialSize?: number; stepSize?: number; marginBottom?: number }
-): InfiniteScroll<T>;
-
+/**
+ * Fetch posts with pagination matching Vite/iOS pattern
+ */
 export function useInfiniteScroll<T>(
   tableName: string,
   queryOptions: QueryOptions = {},
   fetchOptions?: UseCollectionOptions,
-  options?: { initialSize?: number; stepSize?: number; marginBottom?: number }
+  options?: InfiniteScrollOptions
 ): InfiniteScroll<T> | InfiniteScrollWithUser<T> {
-  const { initialSize, stepSize, marginBottom } = options ?? {};
-
-  const [tweetsLimit, setTweetsLimit] = useState(initialSize ?? 20);
-  const [tweetsSize, setTweetsSize] = useState<number | null>(null);
-  const [reachedLimit, setReachedLimit] = useState(false);
-  const [loadMoreInView, setLoadMoreInView] = useState(false);
   const [data, setData] = useState<T[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    if (fetchOptions?.disabled) {
-      setLoading(false);
-      return;
-    }
+  const initialSize = options?.initialSize ?? 20;
+  const stepSize = options?.stepSize ?? 20;
 
-    try {
-      setLoading(true);
-      let query = supabase.from(tableName).select(
-        fetchOptions?.includeUser
-          ? '*, user:created_by(*)' 
-          : '*'
-      );
-
-      // Apply filters
-      if (queryOptions.filters) {
-        for (const filter of queryOptions.filters) {
-          if (filter.operator === 'is') {
-            query = query.is(filter.column, filter.value);
-          } else if (filter.operator === 'in') {
-            query = query.in(filter.column, filter.value);
-          } else {
-            query = query[filter.operator](filter.column, filter.value);
-          }
-        }
+  const fetchData = useCallback(
+    async (append = false) => {
+      if (fetchOptions?.disabled) {
+        setLoading(false);
+        return;
       }
 
-      // Apply ordering
-      if (queryOptions.orderBy) {
-        query = query.order(queryOptions.orderBy.column, {
-          ascending: queryOptions.orderBy.ascending ?? false
-        });
-      }
-
-      // Apply limit
-      if (!reachedLimit) {
-        query = query.limit(tweetsLimit);
-      }
-
-      const { data: result, error } = await query;
-
-      if (error) throw error;
-      setData(result as T[]);
-    } catch (err) {
-      console.error('Error fetching data:', err);
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [tableName, JSON.stringify(queryOptions), tweetsLimit, reachedLimit, fetchOptions?.disabled, fetchOptions?.includeUser]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  useEffect(() => {
-    const checkLimit = tweetsSize ? tweetsLimit >= tweetsSize : false;
-    setReachedLimit(checkLimit);
-  }, [tweetsSize, tweetsLimit]);
-
-  useEffect(() => {
-    if (reachedLimit) return;
-
-    const setTweetsLength = async (): Promise<void> => {
       try {
-        let countQuery = supabase
-          .from(tableName)
-          .select('*', { count: 'exact', head: true });
+        if (!append) {
+          setLoading(true);
+        } else {
+          setIsLoadingMore(true);
+        }
 
-        // Apply same filters for count
+        // Build query matching Vite pattern
+        const selectQuery = fetchOptions?.includeUser
+          ? '*, user:author_id(*)'
+          : '*';
+
+        let query = supabase.from(tableName).select(selectQuery);
+
+        // Apply filters
         if (queryOptions.filters) {
           for (const filter of queryOptions.filters) {
             if (filter.operator === 'is') {
-              countQuery = countQuery.is(filter.column, filter.value);
+              query = query.is(filter.column, filter.value);
             } else if (filter.operator === 'in') {
-              countQuery = countQuery.in(filter.column, filter.value);
+              query = query.in(filter.column, filter.value);
             } else {
-              countQuery = countQuery[filter.operator](filter.column, filter.value);
+              query = query[filter.operator](filter.column, filter.value);
             }
           }
         }
 
-        const { count, error } = await countQuery;
-        if (error) throw error;
-        setTweetsSize(count ?? 0);
+        // Apply ordering
+        if (queryOptions.orderBy) {
+          query = query.order(queryOptions.orderBy.column, {
+            ascending: queryOptions.orderBy.ascending ?? false
+          });
+        }
+
+        // Apply cursor for pagination
+        if (append && cursor) {
+          query = query.lt('created_at', cursor);
+        }
+
+        // Apply limit
+        const limit = append ? stepSize : initialSize;
+        query = query.limit(limit);
+
+        const { data: result, error } = await query;
+
+        if (error) {
+          console.error('Error fetching data:', error);
+          if (fetchOptions?.allowNull) {
+            setData(append ? data : []);
+          }
+        } else if (result) {
+          const newData = result as T[];
+          
+          if (append && data) {
+            setData([...data, ...newData]);
+          } else {
+            setData(newData);
+          }
+
+          // Update cursor and hasMore
+          if (newData.length < limit) {
+            setHasMore(false);
+          } else if (newData.length > 0) {
+            const lastItem = newData[newData.length - 1] as any;
+            setCursor(lastItem.created_at);
+            setHasMore(true);
+          }
+        }
       } catch (err) {
-        console.error('Error getting count:', err);
+        console.error('Error in useInfiniteScroll:', err);
+        setData(null);
+      } finally {
+        setLoading(false);
+        setIsLoadingMore(false);
       }
-    };
+    },
+    [tableName, JSON.stringify(queryOptions), cursor, data, fetchOptions, initialSize, stepSize]
+  );
 
-    void setTweetsLength();
-  }, [data?.length]);
-
+  // Initial fetch
   useEffect(() => {
-    if (reachedLimit) return;
-    if (loadMoreInView) setTweetsLimit(tweetsLimit + (stepSize ?? 20));
-  }, [loadMoreInView]);
+    if (!fetchOptions?.preserve) {
+      fetchData(false);
+    }
+  }, [tableName, JSON.stringify(queryOptions), fetchOptions?.disabled]);
 
-  const makeItInView = (): void => setLoadMoreInView(true);
-  const makeItNotInView = (): void => setLoadMoreInView(false);
+  // Subscribe to realtime updates
+  useEffect(() => {
+    if (fetchOptions?.disabled) return;
 
-  const isLoadMoreHidden =
-    reachedLimit && (data?.length ?? 0) >= (tweetsSize ?? 0);
+    const channel = supabase
+      .channel(`${tableName}:infinite`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: tableName
+        },
+        () => {
+          // Refetch on any change
+          fetchData(false);
+        }
+      )
+      .subscribe();
 
-  const LoadMore = useCallback(
-    (): JSX.Element => (
-      <motion.div
-        className={isLoadMoreHidden ? 'hidden' : 'block'}
-        viewport={{ margin: `0px 0px ${marginBottom ?? 1000}px` }}
-        onViewportEnter={makeItInView}
-        onViewportLeave={makeItNotInView}
-      >
-        <Loading className='mt-5' />
-      </motion.div>
-    ),
-    [isLoadMoreHidden]
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tableName, fetchData, fetchOptions?.disabled]);
+
+  const LoadMore = (): JSX.Element => (
+    <motion.button
+      type='button'
+      className='hover-animation mt-3 flex h-12 w-full items-center
+                 justify-center rounded-md border border-light-line-reply 
+                 font-bold text-main-accent hover:bg-accent-blue/10
+                 dark:border-dark-line-reply'
+      onClick={() => fetchData(true)}
+      disabled={!hasMore || isLoadingMore || loading}
+      {...(!hasMore && { style: { display: 'none' } })}
+    >
+      {isLoadingMore ? <Loading /> : 'Load more'}
+    </motion.button>
   );
 
   return { data, loading, LoadMore };

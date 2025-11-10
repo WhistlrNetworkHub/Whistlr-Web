@@ -1,127 +1,95 @@
-import { useState, useEffect, useContext, createContext, useMemo } from 'react';
-import { supabase } from '@lib/supabase/client';
-import { getRandomId, getRandomInt } from '@lib/random';
-import { checkUsernameAvailability } from '@lib/supabase/utils';
-import type { ReactNode } from 'react';
+/**
+ * Auth Context
+ * Manages authentication state and user profile
+ * Based on Vite and iOS patterns
+ */
+
+import { useState, useEffect, createContext, useContext, useMemo, ReactNode } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { supabase } from '@lib/supabase/client';
 import type { User } from '@lib/types/user';
 import type { Bookmark } from '@lib/types/bookmark';
 
-type AuthContext = {
+interface AuthContextValue {
   user: User | null;
-  error: Error | null;
+  supabaseUser: SupabaseUser | null;
   loading: boolean;
   isAdmin: boolean;
-  randomSeed: string;
-  userBookmarks: Bookmark[] | null;
+  userBookmarks: Bookmark[];
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string, name: string) => Promise<void>;
-};
+  signUpWithEmail: (email: string, password: string, metadata?: { full_name?: string; username?: string }) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+}
 
-export const AuthContext = createContext<AuthContext | null>(null);
+const AuthContext = createContext<AuthContextValue | null>(null);
 
-type AuthContextProviderProps = {
+export function useAuth(): AuthContextValue {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('useAuth must be used within AuthContextProvider');
+  }
+
+  return context;
+}
+
+interface AuthContextProviderProps {
   children: ReactNode;
-};
+}
 
-export function AuthContextProvider({
-  children
-}: AuthContextProviderProps): JSX.Element {
+export function AuthContextProvider({ children }: AuthContextProviderProps): JSX.Element {
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [userBookmarks, setUserBookmarks] = useState<Bookmark[] | null>(null);
-  const [error, setError] = useState<Error | null>(null);
+  const [userBookmarks, setUserBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const isAdmin = useMemo(() => user?.id === 'admin-user-id', [user]);
+
   useEffect(() => {
-    const manageUser = async (authUser: SupabaseUser): Promise<void> => {
-      const { id, user_metadata } = authUser;
-      const displayName = user_metadata?.full_name || user_metadata?.name || 'User';
-      const photoURL = user_metadata?.avatar_url || user_metadata?.picture;
+    console.log('🔐 Initializing auth context...');
 
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', id)
-        .single();
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
 
-      if (!existingUser) {
-        // Profile should be auto-created by trigger, but check anyway
-        let available = false;
-        let randomUsername = '';
-
-        while (!available) {
-          const normalizeName = displayName?.replace(/\s/g, '').toLowerCase();
-          const randomInt = getRandomInt(1, 10_000);
-
-          randomUsername = `${normalizeName}${randomInt}`;
-
-          const isUsernameAvailable = await checkUsernameAvailability(
-            randomUsername
-          );
-
-          if (isUsernameAvailable) available = true;
+        if (error) {
+          console.error('❌ Error getting session:', error);
+          setLoading(false);
+          return;
         }
 
-        const userData = {
-          id,
-          username: randomUsername,
-          full_name: displayName,
-          avatar_url: photoURL ?? '/assets/whistlr-avatar.jpg',
-          bio: null,
-          website: null,
-          location: null,
-          followers_count: 0,
-          following_count: 0,
-          posts_count: 0,
-          is_verified: false,
-          is_private: false,
-          is_online: true,
-          last_seen_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-
-        try {
-          await supabase.from('profiles').insert(userData);
-
-          const { data: newUser } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-          setUser(newUser as User);
-        } catch (error) {
-          setError(error as Error);
+        if (session?.user) {
+          console.log('✅ Session restored:', session.user.email);
+          setSupabaseUser(session.user);
+          await loadUserProfile(session.user.id);
+        } else {
+          console.log('📭 No session found');
+          setLoading(false);
         }
-      } else {
-        setUser(existingUser as User);
-      }
-
-      setLoading(false);
-    };
-
-    const handleUserAuth = (authUser: SupabaseUser | null): void => {
-      setLoading(true);
-
-      if (authUser) void manageUser(authUser);
-      else {
-        setUser(null);
+      } catch (err) {
+        console.error('❌ Auth initialization failed:', err);
         setLoading(false);
       }
     };
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleUserAuth(session?.user || null);
-    });
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        handleUserAuth(session?.user || null);
+      async (event, session) => {
+        console.log('🔄 Auth state changed:', event);
+
+        if (session?.user) {
+          setSupabaseUser(session.user);
+          await loadUserProfile(session.user.id);
+        } else {
+          setSupabaseUser(null);
+          setUser(null);
+          setUserBookmarks([]);
+          setLoading(false);
+        }
       }
     );
 
@@ -130,87 +98,161 @@ export function AuthContextProvider({
     };
   }, []);
 
-  useEffect(() => {
-    if (!user) return;
+  const loadUserProfile = async (userId: string) => {
+    try {
+      console.log('👤 Loading user profile for:', userId);
 
-    const { id } = user;
+      // Fetch profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    // Subscribe to profile changes
-    const userChannel = supabase
-      .channel(`profile:${id}`)
+      if (profileError) {
+        if (profileError.code === 'PGRST116') {
+          console.log('👤 Profile not found, creating one...');
+          await createUserProfile(userId);
+          return;
+        }
+        throw profileError;
+      }
+
+      if (profile) {
+        console.log('✅ Profile loaded:', profile.username);
+        setUser(profile as User);
+        
+        // Load bookmarks
+        await loadUserBookmarks(userId);
+        
+        // Subscribe to realtime updates
+        subscribeToProfile(userId);
+        subscribeToBookmarks(userId);
+      }
+    } catch (error) {
+      console.error('❌ Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createUserProfile = async (userId: string) => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      const newProfile = {
+        id: userId,
+        username: authUser?.user_metadata?.username || authUser?.email?.split('@')[0] || 'user',
+        full_name: authUser?.user_metadata?.full_name || null,
+        email: authUser?.email || null,
+        avatar_url: authUser?.user_metadata?.avatar_url || null
+      };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(newProfile)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      console.log('✅ Profile created:', data.username);
+      setUser(data as User);
+      setLoading(false);
+    } catch (error) {
+      console.error('❌ Error creating profile:', error);
+      setLoading(false);
+    }
+  };
+
+  const loadUserBookmarks = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('post_saves')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      setUserBookmarks(data as Bookmark[]);
+      console.log('📑 Loaded', data.length, 'bookmarks');
+    } catch (error) {
+      console.error('❌ Error loading bookmarks:', error);
+    }
+  };
+
+  const subscribeToProfile = (userId: string) => {
+    const channel = supabase
+      .channel(`profile:${userId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'profiles',
-          filter: `id=eq.${id}`
+          filter: `id=eq.${userId}`
         },
-        (payload) => {
+        async (payload) => {
+          console.log('🔄 Profile updated:', payload);
           setUser(payload.new as User);
         }
       )
       .subscribe();
 
-    // Subscribe to bookmarks
-    const bookmarksChannel = supabase
-      .channel(`bookmarks:${id}`)
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const subscribeToBookmarks = (userId: string) => {
+    const channel = supabase
+      .channel(`bookmarks:${userId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'bookmarks',
-          filter: `userId=eq.${id}`
+          table: 'post_saves',
+          filter: `user_id=eq.${userId}`
         },
         async () => {
-          const { data } = await supabase
-            .from('bookmarks')
-            .select('*')
-            .eq('user_id', id);
-          setUserBookmarks(data as Bookmark[]);
+          console.log('🔄 Bookmarks updated');
+          await loadUserBookmarks(userId);
         }
       )
       .subscribe();
 
-    // Load initial bookmarks
-    supabase
-      .from('bookmarks')
-      .select('*')
-      .eq('user_id', id)
-      .then(({ data }) => {
-        setUserBookmarks(data as Bookmark[]);
-      });
-
     return () => {
-      userChannel.unsubscribe();
-      bookmarksChannel.unsubscribe();
+      supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  };
 
-  const signInWithGoogle = async (): Promise<void> => {
+  const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/home`
-        }
-      });
-      if (error) throw error;
+      console.log('👋 Signing out...');
+      await supabase.auth.signOut();
+      setUser(null);
+      setSupabaseUser(null);
+      setUserBookmarks([]);
+      console.log('✅ Signed out successfully');
     } catch (error) {
-      setError(error as Error);
+      console.error('❌ Error signing out:', error);
+      throw error;
     }
   };
 
-  const signInWithEmail = async (email: string, password: string): Promise<void> => {
+  const signInWithEmail = async (email: string, password: string) => {
     try {
+      console.log('🔑 Signing in with email:', email);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
+
       if (error) throw error;
+      console.log('✅ Signed in successfully');
     } catch (error) {
-      setError(error as Error);
+      console.error('❌ Error signing in:', error);
       throw error;
     }
   };
@@ -218,59 +260,57 @@ export function AuthContextProvider({
   const signUpWithEmail = async (
     email: string,
     password: string,
-    name: string
-  ): Promise<void> => {
+    metadata?: { full_name?: string; username?: string }
+  ) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      console.log('📝 Signing up with email:', email);
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            full_name: name
-          }
+          data: metadata || {}
         }
       });
+
       if (error) throw error;
-      
-      // User will be created in manageUser when auth state changes
+      console.log('✅ Signed up successfully');
     } catch (error) {
-      setError(error as Error);
+      console.error('❌ Error signing up:', error);
       throw error;
     }
   };
 
-  const signOut = async (): Promise<void> => {
+  const signInWithGoogle = async () => {
     try {
-      await supabase.auth.signOut();
+      console.log('🔵 Signing in with Google...');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) throw error;
     } catch (error) {
-      setError(error as Error);
+      console.error('❌ Error signing in with Google:', error);
+      throw error;
     }
   };
 
-  const isAdmin = user ? user.username === 'ccrsxx' : false;
-  const randomSeed = useMemo(getRandomId, [user?.id]);
-
-  const value: AuthContext = {
-    user,
-    error,
-    loading,
-    isAdmin,
-    randomSeed,
-    userBookmarks,
-    signOut,
-    signInWithGoogle,
-    signInWithEmail,
-    signUpWithEmail
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      supabaseUser,
+      loading,
+      isAdmin,
+      userBookmarks,
+      signOut,
+      signInWithEmail,
+      signUpWithEmail,
+      signInWithGoogle
+    }),
+    [user, supabaseUser, loading, isAdmin, userBookmarks]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth(): AuthContext {
-  const context = useContext(AuthContext);
-
-  if (!context)
-    throw new Error('useAuth must be used within an AuthContextProvider');
-
-  return context;
 }

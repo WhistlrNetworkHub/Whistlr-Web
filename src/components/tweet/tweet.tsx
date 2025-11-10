@@ -20,7 +20,7 @@ import type { Tweet } from '@lib/types/tweet';
 import type { User } from '@lib/types/user';
 
 export type TweetProps = Tweet & {
-  user: User;
+  user?: User;
   modal?: boolean;
   pinned?: boolean;
   profile?: User | null;
@@ -33,46 +33,49 @@ export const variants: Variants = {
   exit: { opacity: 0, transition: { duration: 0.2 } }
 };
 
-export function Tweet(tweet: TweetProps): JSX.Element {
+export function Tweet(tweetData: TweetProps): JSX.Element {
   const {
     id: tweetId,
-    text,
+    content,
+    media_urls,
     modal,
-    images,
-    parent,
     pinned,
     profile,
-    userLikes,
-    createdBy,
-    createdAt,
+    author_id,
+    created_at,
     parentTweet,
-    userReplies,
-    userRetweets,
-    user: tweetUserData
-  } = tweet;
-
-  const { id: ownerId, name, username, verified, photoURL } = tweetUserData;
+    comments_count,
+    likes_count,
+    reposts_count,
+    user: tweetUser
+  } = tweetData;
 
   const { user } = useAuth();
-
   const { open, openModal, closeModal } = useModal();
 
   const tweetLink = `/tweet/${tweetId}`;
-
   const userId = user?.id as string;
+  const isOwner = userId === author_id;
 
-  const isOwner = userId === createdBy;
-
-  const { id: parentId, username: parentUsername = username } = parent ?? {};
-
+  // Extract user data
+  const userData = tweetUser || profile;
   const {
-    id: profileId,
-    name: profileName,
-    username: profileUsername
-  } = profile ?? {};
+    id: ownerId,
+    full_name,
+    username,
+    is_verified,
+    avatar_url
+  } = userData || {};
 
-  const reply = !!parent;
-  const tweetIsRetweeted = userRetweets.includes(profileId ?? '');
+  // Handle images
+  let images: any = null;
+  if (media_urls) {
+    try {
+      images = typeof media_urls === 'string' ? JSON.parse(media_urls) : media_urls;
+    } catch {
+      images = media_urls;
+    }
+  }
 
   return (
     <motion.article
@@ -88,119 +91,92 @@ export function Tweet(tweet: TweetProps): JSX.Element {
         open={open}
         closeModal={closeModal}
       >
-        <TweetReplyModal tweet={tweet} closeModal={closeModal} />
+        <TweetReplyModal tweet={tweetData} closeModal={closeModal} />
       </Modal>
-      <Link href={tweetLink} scroll={!reply}>
-        <a
-          className={cn(
-            `accent-tab hover-card relative flex flex-col 
-             gap-y-4 px-4 py-3 outline-none duration-200`,
-            parentTweet
-              ? 'mt-0.5 pt-2.5 pb-0'
-              : 'border-b border-light-border dark:border-dark-border'
-          )}
-          draggable={false}
-          onClick={delayScroll(200)}
-        >
-          <div className='grid grid-cols-[auto,1fr] gap-x-3 gap-y-1'>
-            <AnimatePresence initial={false}>
-              {modal ? null : pinned ? (
-                <TweetStatus type='pin'>
-                  <p className='text-sm font-bold'>Pinned Tweet</p>
-                </TweetStatus>
-              ) : (
-                tweetIsRetweeted && (
-                  <TweetStatus type='tweet'>
-                    <Link href={profileUsername as string}>
-                      <a className='custom-underline truncate text-sm font-bold'>
-                        {userId === profileId ? 'You' : profileName} Retweeted
-                      </a>
-                    </Link>
-                  </TweetStatus>
-                )
-              )}
-            </AnimatePresence>
-            <div className='flex flex-col items-center gap-2'>
-              <UserTooltip avatar modal={modal} {...tweetUserData}>
-                <UserAvatar src={photoURL} alt={name} username={username} />
-              </UserTooltip>
-              {parentTweet && (
-                <i className='hover-animation h-full w-0.5 bg-light-line-reply dark:bg-dark-line-reply' />
-              )}
-            </div>
-            <div className='flex min-w-0 flex-col'>
-              <div className='flex justify-between gap-2 text-light-secondary dark:text-dark-secondary'>
-                <div className='flex gap-1 truncate xs:overflow-visible xs:whitespace-normal'>
-                  <UserTooltip modal={modal} {...tweetUserData}>
-                    <UserName
-                      name={name}
-                      username={username}
-                      verified={verified}
-                      className='text-light-primary dark:text-dark-primary'
-                    />
-                  </UserTooltip>
-                  <UserTooltip modal={modal} {...tweetUserData}>
-                    <UserUsername username={username} />
-                  </UserTooltip>
-                  <TweetDate tweetLink={tweetLink} createdAt={createdAt} />
-                </div>
-                <div className='px-4'>
-                  {!modal && (
-                    <TweetActions
-                      isOwner={isOwner}
-                      ownerId={ownerId}
-                      tweetId={tweetId}
-                      parentId={parentId}
-                      username={username}
-                      hasImages={!!images}
-                      createdBy={createdBy}
-                    />
-                  )}
-                </div>
-              </div>
-              {(reply || modal) && (
-                <p
-                  className={cn(
-                    'text-light-secondary dark:text-dark-secondary',
-                    modal && 'order-1 my-2'
-                  )}
-                >
-                  Replying to{' '}
-                  <Link href={`/user/${parentUsername}`}>
-                    <a className='custom-underline text-main-accent'>
-                      @{parentUsername}
-                    </a>
-                  </Link>
-                </p>
-              )}
-              {text && (
-                <p className='whitespace-pre-line break-words'>{text}</p>
-              )}
-              <div className='mt-1 flex flex-col gap-2'>
-                {images && (
-                  <ImagePreview
-                    tweet
-                    imagesPreview={images}
-                    previewCount={images.length}
-                  />
-                )}
-                {!modal && (
-                  <TweetStats
-                    reply={reply}
-                    userId={userId}
-                    isOwner={isOwner}
-                    tweetId={tweetId}
-                    userLikes={userLikes}
-                    userReplies={userReplies}
-                    userRetweets={userRetweets}
-                    openModal={!parent ? openModal : undefined}
-                  />
-                )}
-              </div>
-            </div>
+      <Link
+        href={tweetLink}
+        scroll={false}
+        className={cn(
+          `accent-tab hover-card relative flex flex-col
+           gap-y-4 px-4 py-3 outline-none duration-200`,
+          parentTweet
+            ? 'mt-0.5 pt-2.5 pb-0'
+            : 'border-b border-light-border dark:border-dark-border'
+        )}
+        draggable={false}
+        onClick={delayScroll(200)}
+      >
+        <div className='grid grid-cols-[auto,1fr] gap-x-3 gap-y-1'>
+          <AnimatePresence initial={false}>
+            {modal ? null : pinned ? (
+              <TweetStatus type='pin'>
+                <p className='text-sm font-bold'>Pinned Tweet</p>
+              </TweetStatus>
+            ) : null}
+          </AnimatePresence>
+          <div className='flex flex-col items-center gap-2'>
+            <UserTooltip avatar modal={modal} {...userData}>
+              <UserAvatar
+                src={avatar_url || ''}
+                alt={full_name || username || 'User'}
+                username={username || ''}
+                isLink={false}
+              />
+            </UserTooltip>
+            {parentTweet && (
+              <i className='hover-animation h-full w-0.5 bg-light-line-reply dark:bg-dark-line-reply' />
+            )}
           </div>
-        </a>
+          <div className='flex min-w-0 flex-col'>
+            <div className='flex justify-between gap-2 text-light-secondary dark:text-dark-secondary'>
+              <div className='flex gap-1 truncate xs:overflow-visible xs:whitespace-normal'>
+                <UserTooltip modal={modal} {...userData}>
+                  <UserName
+                    className='-mb-1'
+                    name={full_name || username || 'User'}
+                    username={username || ''}
+                    verified={is_verified || false}
+                  />
+                </UserTooltip>
+                <UserUsername username={username || ''} />
+              </div>
+              <TweetDate createdAt={created_at} tweetLink={tweetLink} />
+            </div>
+            <div className='flex flex-col gap-2'>
+              {content && <p className='whitespace-pre-wrap break-words'>{content}</p>}
+              {images && Array.isArray(images) && images.length > 0 && (
+                <ImagePreview
+                  tweetId={tweetId}
+                  images={images}
+                  previewCount={images.length}
+                />
+              )}
+            </div>
+            {!modal && (
+              <TweetActions
+                isOwner={isOwner}
+                ownerId={author_id || ''}
+                tweetId={tweetId}
+                username={username || ''}
+                userLikesId={likes_count}
+                userRetweetsId={reposts_count}
+                tweetLink={tweetLink}
+                openModal={!parentTweet ? openModal : undefined}
+              />
+            )}
+          </div>
+        </div>
       </Link>
+      {modal && (
+        <TweetStats
+          userId={userId}
+          tweetId={tweetId}
+          reply={false}
+          likeMove={likes_count}
+          tweetMove={reposts_count}
+          replyMove={comments_count}
+        />
+      )}
     </motion.article>
   );
 }

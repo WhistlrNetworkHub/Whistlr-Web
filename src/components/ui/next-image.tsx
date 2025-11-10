@@ -48,12 +48,11 @@ export function NextImage({
             ? '!h-auto !min-h-0 !w-auto !min-w-0 rounded-lg object-contain'
             : 'object-cover'
         )}
-        src={src}
+        src={src || '/default-avatar.png'}
         width={width}
         height={height}
         alt={alt}
-        onLoadingComplete={handleLoad}
-        layout='responsive'
+        onLoad={handleLoad}
         {...rest}
       />
       {children}
