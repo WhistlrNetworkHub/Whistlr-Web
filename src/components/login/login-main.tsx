@@ -41,7 +41,7 @@ export function LoginMain(): JSX.Element {
         <div className='relative hidden items-center justify-center overflow-hidden lg:flex'>
           <BackgroundCarousel />
           <i className='absolute z-10'>
-            <CustomIcon className='h-96 w-96 text-white' iconName='WhistlrIcon' />
+            <CustomIcon className='h-[600px] w-[600px] text-white' iconName='WhistlrIcon' />
           </i>
         </div>
         <div className='flex flex-col items-center justify-center gap-6 p-8'>
@@ -137,7 +137,7 @@ export function LoginMain(): JSX.Element {
       <div className='relative hidden items-center justify-center overflow-hidden lg:flex'>
         <BackgroundCarousel />
         <i className='absolute z-10'>
-          <CustomIcon className='h-96 w-96 text-white' iconName='WhistlrIcon' />
+          <CustomIcon className='h-[600px] w-[600px] text-white' iconName='WhistlrIcon' />
         </i>
       </div>
       <div className='flex flex-col items-center justify-between gap-6 p-8 lg:items-start lg:justify-center'>
