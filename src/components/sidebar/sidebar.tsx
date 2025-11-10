@@ -115,11 +115,11 @@ export function Sidebar(): JSX.Element {
           <h1 className='hidden xs:flex xs:mb-6'>
             <Link
               href='/home'
-              className='custom-button main-tab flex h-12 w-12 items-center justify-center rounded-xl text-accent-blue 
+              className='custom-button main-tab flex h-16 w-16 items-center justify-center rounded-xl text-accent-blue 
                          transition hover:bg-light-primary/10 focus-visible:bg-accent-blue/10 
                          focus-visible:!ring-accent-blue/80 dark:text-whistlr-icon dark:hover:bg-dark-primary/10'
             >
-              <CustomIcon className='h-16 w-16' iconName='WhistlrIcon' />
+              <CustomIcon className='h-20 w-20' iconName='WhistlrIcon' />
             </Link>
           </h1>
           
