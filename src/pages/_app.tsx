@@ -1,4 +1,5 @@
 import '@styles/globals.scss';
+import '@styles/animations.css';
 
 import { AuthContextProvider } from '@lib/context/auth-context';
 import { ThemeContextProvider } from '@lib/context/theme-context';

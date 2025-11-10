@@ -51,8 +51,11 @@ export function LoginMain(): JSX.Element {
               ← Back
             </button>
             <h2 className='mb-6 text-3xl font-bold'>
-              {isSignUp ? 'Create your account' : 'Sign in to Whistlr'}
+              Discover.<span className='animated-gradient'>Connect</span>.Explore
             </h2>
+            <h3 className='mb-6 text-xl font-semibold'>
+              {isSignUp ? 'Create your account' : 'Sign in to Whistlr'}
+            </h3>
             <form onSubmit={handleEmailAuth} className='flex flex-col gap-4'>
               {isSignUp && (
                 <input
@@ -113,15 +116,10 @@ export function LoginMain(): JSX.Element {
         </i>
       </div>
       <div className='flex flex-col items-center justify-between gap-6 p-8 lg:items-start lg:justify-center'>
-        <i className='mb-0 self-center lg:mb-10 lg:self-auto'>
-          <CustomIcon
-            className='-mt-4 h-6 w-6 text-accent-blue lg:h-12 lg:w-12 dark:lg:text-whistlr-icon'
-            iconName='WhistlrIcon'
-          />
-        </i>
         <div className='flex max-w-xs flex-col gap-4 lg:max-w-none lg:gap-16'>
           <h1 className='text-3xl lg:text-6xl font-bold'>
-            Happening now
+            Discover.
+            <span className='animated-gradient'>Connect</span>.Explore
           </h1>
           <h2 className='text-xl lg:text-3xl font-bold'>
             Join Whistlr today.
