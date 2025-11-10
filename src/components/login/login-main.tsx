@@ -38,6 +38,9 @@ export function LoginMain(): JSX.Element {
       <main className='grid lg:grid-cols-[1fr,45vw]'>
         <div className='relative hidden items-center justify-center overflow-hidden lg:flex'>
           <BackgroundCarousel />
+          <i className='absolute z-10'>
+            <CustomIcon className='h-96 w-96 text-white' iconName='WhistlrIcon' />
+          </i>
         </div>
         <div className='flex flex-col items-center justify-center gap-6 p-8'>
           <div className='w-full max-w-md'>
@@ -105,6 +108,9 @@ export function LoginMain(): JSX.Element {
     <main className='grid lg:grid-cols-[1fr,45vw]'>
       <div className='relative hidden items-center justify-center overflow-hidden lg:flex'>
         <BackgroundCarousel />
+        <i className='absolute z-10'>
+          <CustomIcon className='h-96 w-96 text-white' iconName='WhistlrIcon' />
+        </i>
       </div>
       <div className='flex flex-col items-center justify-between gap-6 p-8 lg:items-start lg:justify-center'>
         <i className='mb-0 self-center lg:mb-10 lg:self-auto'>
