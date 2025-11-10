@@ -95,51 +95,93 @@ export function TweetActions({
   }, [userId, tweetId]);
 
   const handleLike = async (): Promise<void> => {
-    if (!user) return;
+    if (!userId) return;
 
-    const action = liked ? 'unlike' : 'like';
+    // Optimistic update
     setLiked(!liked);
 
     try {
-      await manageLike(action, tweetId, userId);
+      if (liked) {
+        // Unlike
+        await supabase
+          .from('post_likes')
+          .delete()
+          .eq('user_id', userId)
+          .eq('post_id', tweetId);
+      } else {
+        // Like
+        await supabase
+          .from('post_likes')
+          .insert({ user_id: userId, post_id: tweetId });
+      }
     } catch (error) {
-      console.error('Error managing like:', error);
-      setLiked(liked); // Revert on error
+      // Revert on error
+      setLiked(liked);
+      console.error('Error toggling like:', error);
       toast.error('Failed to update like');
     }
   };
 
   const handleRepost = async (): Promise<void> => {
-    if (!user) return;
+    if (!userId) return;
 
-    const action = reposted ? 'unrepost' : 'repost';
+    // Optimistic update
     setReposted(!reposted);
 
     try {
-      await manageRetweet(action, tweetId, userId);
-      toast.success(reposted ? 'Repost removed' : 'Reposted!');
+      if (reposted) {
+        // Un-repost
+        await supabase
+          .from('post_boosts')
+          .delete()
+          .eq('user_id', userId)
+          .eq('post_id', tweetId);
+      } else {
+        // Repost
+        await supabase
+          .from('post_boosts')
+          .insert({ user_id: userId, post_id: tweetId });
+      }
     } catch (error) {
-      console.error('Error managing repost:', error);
-      setReposted(reposted); // Revert on error
+      // Revert on error
+      setReposted(reposted);
+      console.error('Error toggling repost:', error);
       toast.error('Failed to update repost');
     }
   };
 
   const handleBookmark = async (): Promise<void> => {
-    if (!user) return;
+    if (!userId) return;
 
-    const action = bookmarked ? 'unbookmark' : 'bookmark';
+    // Optimistic update
     setBookmarked(!bookmarked);
 
     try {
-      await manageBookmark(action, tweetId, userId);
-      toast.success(bookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
+      if (bookmarked) {
+        // Remove bookmark
+        await supabase
+          .from('post_saves')
+          .delete()
+          .eq('user_id', userId)
+          .eq('post_id', tweetId);
+        
+        toast.success('Removed from bookmarks');
+      } else {
+        // Add bookmark
+        await supabase
+          .from('post_saves')
+          .insert({ user_id: userId, post_id: tweetId });
+        
+        toast.success('Added to bookmarks');
+      }
     } catch (error) {
-      console.error('Error managing bookmark:', error);
-      setBookmarked(bookmarked); // Revert on error
+      // Revert on error
+      setBookmarked(bookmarked);
+      console.error('Error toggling bookmark:', error);
       toast.error('Failed to update bookmark');
     }
   };
+
 
   const handleDelete = async (): Promise<void> => {
     try {
