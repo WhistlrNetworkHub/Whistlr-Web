@@ -55,10 +55,12 @@ export function ImagePreview({
   const { open, openModal, closeModal } = useModal();
 
   useEffect(() => {
-    const imageData = imagesPreview[selectedIndex];
-    setSelectedImage(imageData);
+    if (imagesPreview && imagesPreview[selectedIndex]) {
+      const imageData = imagesPreview[selectedIndex];
+      setSelectedImage(imageData);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedIndex]);
+  }, [selectedIndex, imagesPreview]);
 
   const handleVideoStop = (): void => {
     if (videoRef.current) videoRef.current.pause();
