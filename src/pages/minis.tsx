@@ -124,129 +124,125 @@ export default function Minis(): JSX.Element {
     }
   };
 
-  if (loading) {
-    return (
-      <div className='flex h-screen items-center justify-center bg-black'>
-        <Loading className='text-white' />
-      </div>
-    );
-  }
-
-  if (minis.length === 0) {
-    return (
-      <div className='flex h-screen flex-col items-center justify-center bg-black text-white'>
-        <HeroIcon className='mb-4 h-16 w-16 text-light-secondary' iconName='VideoCameraIcon' />
-        <p className='text-xl font-semibold'>No minis yet</p>
-        <p className='mt-2 text-light-secondary'>Video content will appear here</p>
-      </div>
-    );
-  }
-
   return (
-    <div className='relative h-screen overflow-hidden bg-black'>
+    <MainContainer>
       <SEO title='Minis / Whistlr' />
+      <MainHeader title='Minis' className='flex items-center justify-between' />
       
-      {/* TikTok-style vertical scroll container */}
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        className='hide-scrollbar h-screen snap-y snap-mandatory overflow-y-scroll'
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        {minis.map((mini, index) => (
+      {loading ? (
+        <Loading className='mt-5' />
+      ) : minis.length === 0 ? (
+        <div className='flex flex-col items-center justify-center py-20'>
+          <HeroIcon className='mb-4 h-16 w-16 text-light-secondary' iconName='VideoCameraIcon' />
+          <p className='text-xl font-semibold text-light-primary dark:text-dark-primary'>No minis yet</p>
+          <p className='mt-2 text-light-secondary dark:text-dark-secondary'>Video content will appear here</p>
+        </div>
+      ) : (
+        <div className='relative' style={{ height: 'calc(100vh - 120px)' }}>
+          {/* TikTok-style vertical scroll container */}
           <div
-            key={mini.id}
-            className='relative flex h-screen w-full snap-start snap-always items-center justify-center'
+            ref={containerRef}
+            onScroll={handleScroll}
+            className='hide-scrollbar h-full snap-y snap-mandatory overflow-y-scroll'
+            style={{ scrollBehavior: 'smooth' }}
           >
-            {/* Video player */}
-            <video
-              ref={(el) => (videoRefs.current[index] = el)}
-              src={mini.media_url?.[0]}
-              loop
-              playsInline
-              muted={false}
-              className='h-full w-full object-contain'
-              onClick={(e) => {
-                const video = e.currentTarget;
-                if (video.paused) {
-                  video.play();
-                } else {
-                  video.pause();
-                }
-              }}
-            />
+          {minis.map((mini, index) => (
+            <div
+              key={mini.id}
+              className='relative flex w-full snap-start snap-always items-center justify-center bg-black'
+              style={{ height: 'calc(100vh - 120px)' }}
+            >
+              {/* Video player */}
+              <video
+                ref={(el) => (videoRefs.current[index] = el)}
+                src={mini.media_url?.[0]}
+                loop
+                playsInline
+                muted={false}
+                className='h-full w-full object-contain'
+                onClick={(e) => {
+                  const video = e.currentTarget;
+                  if (video.paused) {
+                    video.play();
+                  } else {
+                    video.pause();
+                  }
+                }}
+              />
 
-            {/* Overlay UI */}
-            <div className='absolute inset-0 flex flex-col justify-end p-4'>
-              <div className='flex items-end justify-between'>
-                {/* Left side - User info and caption */}
-                <div className='flex-1 pb-20'>
-                  <div className='flex items-center gap-3 mb-3'>
-                    <UserAvatar
-                      src={mini.user.avatar_url}
-                      alt={mini.user.full_name}
-                      username={mini.user.username}
-                      className='h-12 w-12 border-2 border-white'
-                    />
-                    <div>
-                      <p className='font-bold text-white'>{mini.user.full_name}</p>
-                      <p className='text-sm text-white/80'>@{mini.user.username}</p>
-                    </div>
-                  </div>
-                  {mini.content && (
-                    <p className='text-white line-clamp-3'>{mini.content}</p>
-                  )}
-                </div>
-
-                {/* Right side - Action buttons */}
-                <div className='flex flex-col items-center gap-6 pb-20'>
-                  {/* Like button */}
-                  <button
-                    onClick={() => handleLike(mini.id)}
-                    className='flex flex-col items-center gap-1 transition hover:scale-110'
-                  >
-                    <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
-                      <HeroIcon
-                        className='h-7 w-7 text-white'
-                        iconName='HeartIcon'
-                        solid={false}
+              {/* Overlay UI */}
+              <div className='absolute inset-0 flex flex-col justify-end p-4'>
+                <div className='flex items-end justify-between'>
+                  {/* Left side - User info and caption */}
+                  <div className='flex-1 pb-20'>
+                    <div className='flex items-center gap-3 mb-3'>
+                      <UserAvatar
+                        src={mini.user.avatar_url}
+                        alt={mini.user.full_name}
+                        username={mini.user.username}
+                        className='h-12 w-12 border-2 border-white'
                       />
+                      <div>
+                        <p className='font-bold text-white'>{mini.user.full_name}</p>
+                        <p className='text-sm text-white/80'>@{mini.user.username}</p>
+                      </div>
                     </div>
-                    <span className='text-xs font-semibold text-white'>{mini.likes_count}</span>
-                  </button>
+                    {mini.content && (
+                      <p className='text-white line-clamp-3'>{mini.content}</p>
+                    )}
+                  </div>
 
-                  {/* Comment button */}
-                  <button className='flex flex-col items-center gap-1 transition hover:scale-110'>
-                    <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
-                      <HeroIcon className='h-7 w-7 text-white' iconName='ChatBubbleOvalLeftIcon' />
-                    </div>
-                    <span className='text-xs font-semibold text-white'>{mini.comments_count}</span>
-                  </button>
+                  {/* Right side - Action buttons */}
+                  <div className='flex flex-col items-center gap-6 pb-20'>
+                    {/* Like button */}
+                    <button
+                      onClick={() => handleLike(mini.id)}
+                      className='flex flex-col items-center gap-1 transition hover:scale-110'
+                    >
+                      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
+                        <HeroIcon
+                          className='h-7 w-7 text-white'
+                          iconName='HeartIcon'
+                          solid={false}
+                        />
+                      </div>
+                      <span className='text-xs font-semibold text-white'>{mini.likes_count}</span>
+                    </button>
 
-                  {/* Share button */}
-                  <button className='flex flex-col items-center gap-1 transition hover:scale-110'>
-                    <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
-                      <HeroIcon className='h-7 w-7 text-white' iconName='PaperAirplaneIcon' />
-                    </div>
-                    <span className='text-xs font-semibold text-white'>{mini.shares_count}</span>
-                  </button>
+                    {/* Comment button */}
+                    <button className='flex flex-col items-center gap-1 transition hover:scale-110'>
+                      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
+                        <HeroIcon className='h-7 w-7 text-white' iconName='ChatBubbleOvalLeftIcon' />
+                      </div>
+                      <span className='text-xs font-semibold text-white'>{mini.comments_count}</span>
+                    </button>
+
+                    {/* Share button */}
+                    <button className='flex flex-col items-center gap-1 transition hover:scale-110'>
+                      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
+                        <HeroIcon className='h-7 w-7 text-white' iconName='PaperAirplaneIcon' />
+                      </div>
+                      <span className='text-xs font-semibold text-white'>{mini.shares_count}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+          ))}
           </div>
-        ))}
-      </div>
 
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-    </div>
+          <style jsx>{`
+            .hide-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+            .hide-scrollbar {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
+        </div>
+      )}
+    </MainContainer>
   );
 }
 
