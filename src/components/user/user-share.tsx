@@ -7,7 +7,16 @@ import { siteURL } from '@lib/env';
 import { Button } from '@components/ui/button';
 import { HeroIcon } from '@components/ui/hero-icon';
 import { ToolTip } from '@components/ui/tooltip';
-import { variants } from '@components/tweet/tweet-actions';
+
+const variants = {
+  initial: { opacity: 0, y: -25 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring', duration: 0.4 }
+  },
+  exit: { opacity: 0, y: -25, transition: { duration: 0.2 } }
+};
 
 type UserShareProps = {
   username: string;
