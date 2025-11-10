@@ -1,8 +1,7 @@
 import { AnimatePresence } from 'framer-motion';
-
 import { useCollection } from '@lib/hooks/useCollection';
 import { useDocument } from '@lib/hooks/useDocument';
-import { tweetsCollection } from '@lib/supabase/collections';
+import { tweetsCollection, commentsCollection } from '@lib/supabase/collections';
 import { useUser } from '@lib/context/user-context';
 import { UserLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
@@ -12,52 +11,67 @@ import { UserHomeLayout } from '@components/layout/user-home-layout';
 import { Tweet } from '@components/tweet/tweet';
 import { Loading } from '@components/ui/loading';
 import { StatsEmpty } from '@components/tweet/stats-empty';
-import { TweetWithParent } from '@components/tweet/tweet-with-parent';
 import type { ReactElement, ReactNode } from 'react';
 
 export default function UserWithReplies(): JSX.Element {
   const { user } = useUser();
 
-  const { id, name, username, pinnedTweet } = user ?? {};
+  const { id, full_name, username, pinned_post_id } = user ?? {};
 
   const { data: pinnedData } = useDocument(
-    doc(tweetsCollection, pinnedTweet ?? 'null'),
+    tweetsCollection,
+    pinned_post_id ?? 'null',
     {
-      disabled: !pinnedTweet,
+      disabled: !pinned_post_id,
       allowNull: true,
       includeUser: true
     }
   );
 
-  const { data, loading } = useCollection(
-    query(
-      tweetsCollection,
-      where('createdBy', '==', id),
-      orderBy('createdAt', 'desc')
-    ),
+  // Fetch all posts by user
+  const { data: posts, loading: postsLoading } = useCollection(
+    tweetsCollection,
+    {
+      filter: { column: 'author_id', value: id },
+      orderBy: { column: 'created_at', ascending: false }
+    },
     { includeUser: true, allowNull: true }
   );
+
+  // Fetch all comments by user
+  const { data: comments, loading: commentsLoading } = useCollection(
+    commentsCollection,
+    {
+      filter: { column: 'author_id', value: id },
+      orderBy: { column: 'created_at', ascending: false }
+    },
+    { includeUser: true, allowNull: true }
+  );
+
+  const loading = postsLoading || commentsLoading;
 
   return (
     <section>
       <SEO
-        title={`Tweets with replies by ${name as string} (@${
+        title={`Posts with replies by ${full_name as string} (@${
           username as string
         }) / Whistlr`}
       />
       {loading ? (
         <Loading className='mt-5' />
-      ) : !data ? (
+      ) : (!posts || posts.length === 0) && (!comments || comments.length === 0) ? (
         <StatsEmpty
-          title={`@${username as string} hasn't tweeted`}
-          description='When they do, their Tweets will show up here.'
+          title={`@${username as string} hasn't posted yet`}
+          description='When they do, their posts will show up here.'
         />
       ) : (
         <AnimatePresence mode='popLayout'>
           {pinnedData && (
             <Tweet pinned {...pinnedData} key={`pinned-${pinnedData.id}`} />
           )}
-          <TweetWithParent data={data} />
+          {posts?.map((tweet) => (
+            <Tweet {...tweet} key={tweet.id} />
+          ))}
         </AnimatePresence>
       )}
     </section>
