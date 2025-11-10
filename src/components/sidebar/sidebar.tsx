@@ -108,20 +108,23 @@ export function Sidebar(): JSX.Element {
       <div
         className='fixed bottom-0 z-10 flex w-full flex-col justify-between border-t border-light-border 
                    bg-main-background py-0 dark:border-dark-border xs:top-0 xs:h-full xs:w-auto xs:border-0 
-                   xs:bg-transparent xs:px-2 xs:py-3 xs:pt-2 md:px-4 xl:w-72'
+                   xs:bg-transparent xs:px-3 xs:py-6 md:px-4 xl:w-72'
       >
-        <section className='flex flex-col justify-center gap-2 xs:items-center xl:items-stretch'>
-            <h1 className='hidden xs:flex'>
-              <Link
-                href='/home'
-                className='custom-button main-tab text-accent-blue transition hover:bg-light-primary/10
-                           focus-visible:bg-accent-blue/10 focus-visible:!ring-accent-blue/80
-                           dark:text-whistlr-icon dark:hover:bg-dark-primary/10'
-              >
-                <CustomIcon className='h-16 w-16' iconName='WhistlrIcon' />
-              </Link>
-            </h1>
-          <nav className='flex items-center justify-around xs:flex-col xs:justify-center xl:block'>
+        <section className='flex flex-col gap-1 xs:items-start xl:items-stretch'>
+          {/* Logo */}
+          <h1 className='hidden xs:flex xs:mb-6'>
+            <Link
+              href='/home'
+              className='custom-button main-tab flex h-12 w-12 items-center justify-center rounded-xl text-accent-blue 
+                         transition hover:bg-light-primary/10 focus-visible:bg-accent-blue/10 
+                         focus-visible:!ring-accent-blue/80 dark:text-whistlr-icon dark:hover:bg-dark-primary/10'
+            >
+              <CustomIcon className='h-16 w-16' iconName='WhistlrIcon' />
+            </Link>
+          </h1>
+          
+          {/* Navigation Links */}
+          <nav className='flex flex-col gap-1 xs:w-full'>
             {navLinks.map(({ ...linkData }) => (
               <SidebarLink {...linkData} key={linkData.href} />
             ))}
@@ -133,10 +136,13 @@ export function Sidebar(): JSX.Element {
             />
             {!isMobile && <MoreSettings />}
           </nav>
+          
+          {/* Tweet Button */}
           <Button
-            className='accent-tab absolute right-4 -translate-y-[72px] bg-main-accent text-lg font-bold text-white
-                       outline-none transition hover:brightness-90 active:brightness-75 xs:static xs:translate-y-0
-                       xs:hover:bg-main-accent/90 xs:active:bg-main-accent/75 xl:w-11/12'
+            className='accent-tab mt-4 hidden bg-main-accent text-lg font-bold text-white
+                       outline-none transition hover:brightness-90 active:brightness-75 
+                       xs:flex xs:h-12 xs:w-12 xs:items-center xs:justify-center xs:rounded-xl
+                       xl:w-full xl:rounded-full xl:py-3'
             onClick={openModal}
           >
             <CustomIcon
@@ -146,6 +152,8 @@ export function Sidebar(): JSX.Element {
             <p className='hidden xl:block'>Tweet</p>
           </Button>
         </section>
+        
+        {/* Profile at bottom - desktop only */}
         {!isMobile && <SidebarProfile />}
       </div>
     </header>
