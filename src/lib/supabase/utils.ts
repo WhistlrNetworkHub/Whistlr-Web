@@ -69,9 +69,21 @@ export async function updateUserData(
  */
 export async function updateUserTheme(
   userId: string,
-  theme: 'light' | 'dark' | 'auto'
+  updates: { theme?: 'light' | 'dim' | 'dark'; accent?: string }
 ): Promise<void> {
-  await updateUserData(userId, { theme_preference: theme });
+  const data: Record<string, any> = {};
+  
+  // Map 'dim' to 'dark' for database compatibility
+  if (updates.theme) {
+    data.theme_preference = updates.theme === 'dim' ? 'dark' : updates.theme;
+  }
+  
+  // Accent is stored client-side only, not in database
+  // Skip accent updates to database
+  
+  if (Object.keys(data).length > 0) {
+    await updateUserData(userId, data);
+  }
 }
 
 /**

@@ -22,7 +22,7 @@ export function UserCard(user: UserCardProps): JSX.Element {
                  py-3 hover:bg-light-primary/5 dark:hover:bg-dark-primary/5'
     >
       <UserTooltip avatar {...user} modal={modal}>
-        <UserAvatar src={photoURL} alt={name} username={username} />
+        <UserAvatar src={photoURL} alt={name} username={username} isLink={false} />
       </UserTooltip>
       <div className='flex flex-col gap-1 truncate xs:overflow-visible'>
         <div className='flex items-center justify-between gap-2 truncate xs:overflow-visible'>

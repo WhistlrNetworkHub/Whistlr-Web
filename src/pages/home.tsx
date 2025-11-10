@@ -21,7 +21,7 @@ export default function Home(): JSX.Element {
     {
       orderBy: { column: 'created_at', ascending: false }
     },
-    { includeUser: true, allowNull: true, preserve: true }
+    { includeUser: true, allowNull: true }
   );
 
   return (
