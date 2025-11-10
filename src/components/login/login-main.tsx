@@ -3,6 +3,7 @@ import { useAuth } from '@lib/context/auth-context';
 import { CustomIcon } from '@components/ui/custom-icon';
 import { Button } from '@components/ui/button';
 import { BackgroundCarousel } from './background-carousel';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 export function LoginMain(): JSX.Element {
@@ -13,6 +14,7 @@ export function LoginMain(): JSX.Element {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,15 +77,38 @@ export function LoginMain(): JSX.Element {
                 required
                 className='rounded-md border border-light-border bg-transparent px-4 py-3 focus:border-accent-blue focus:outline-none dark:border-dark-border'
               />
-              <input
-                type='password'
-                placeholder='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className='rounded-md border border-light-border bg-transparent px-4 py-3 focus:border-accent-blue focus:outline-none dark:border-dark-border'
-              />
+              <div className='relative'>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='Password'
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className='w-full rounded-md border border-light-border bg-transparent px-4 py-3 pr-12 focus:border-accent-blue focus:outline-none dark:border-dark-border'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-light-secondary hover:text-light-primary dark:text-dark-secondary dark:hover:text-dark-primary'
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className='h-5 w-5' />
+                  ) : (
+                    <EyeIcon className='h-5 w-5' />
+                  )}
+                </button>
+              </div>
+              {!isSignUp && (
+                <div className='flex justify-end'>
+                  <button
+                    type='button'
+                    className='text-sm text-accent-blue hover:underline'
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
               <Button
                 type='submit'
                 disabled={loading}
