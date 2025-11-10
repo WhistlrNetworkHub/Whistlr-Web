@@ -26,35 +26,59 @@ const navLinks: Readonly<NavLink[]> = [
     iconName: 'HomeIcon'
   },
   {
-    href: '/explore',
-    linkName: 'Explore',
-    iconName: 'HashtagIcon',
-    disabled: true,
-    canBeHidden: true
+    href: '/minis',
+    linkName: 'Minis',
+    iconName: 'FilmIcon'
+  },
+  {
+    href: '/inbox',
+    linkName: 'Inbox',
+    iconName: 'EnvelopeIcon'
   },
   {
     href: '/notifications',
     linkName: 'Notifications',
-    iconName: 'BellIcon',
-    disabled: true
+    iconName: 'BellIcon'
   },
   {
-    href: '/messages',
-    linkName: 'Messages',
-    iconName: 'EnvelopeIcon',
-    disabled: true
+    href: '/discover',
+    linkName: 'Discover',
+    iconName: 'MagnifyingGlassIcon'
+  },
+  {
+    href: '/waves',
+    linkName: 'Waves',
+    iconName: 'MusicalNoteIcon',
+    canBeHidden: true
+  },
+  {
+    href: '/flow',
+    linkName: 'Flow',
+    iconName: 'VideoCameraIcon',
+    canBeHidden: true
+  },
+  {
+    href: '/noise',
+    linkName: 'Noise',
+    iconName: 'SpeakerWaveIcon',
+    canBeHidden: true
+  },
+  {
+    href: '/news',
+    linkName: 'News',
+    iconName: 'NewspaperIcon',
+    canBeHidden: true
+  },
+  {
+    href: '/market',
+    linkName: 'Market',
+    iconName: 'ShoppingCartIcon',
+    canBeHidden: true
   },
   {
     href: '/bookmarks',
     linkName: 'Bookmarks',
     iconName: 'BookmarkIcon',
-    canBeHidden: true
-  },
-  {
-    href: '/lists',
-    linkName: 'Lists',
-    iconName: 'Bars3BottomLeftIcon',
-    disabled: true,
     canBeHidden: true
   }
 ];
