@@ -14,10 +14,11 @@ const UNITS: Units = {
 };
 
 export function formatDate(
-  targetDate: Timestamp,
+  targetDate: string | Date,
   mode: 'tweet' | 'message' | 'full' | 'joined'
 ): string {
-  const date = targetDate.toDate();
+  // Convert ISO string to Date if needed
+  const date = typeof targetDate === 'string' ? new Date(targetDate) : targetDate;
 
   if (mode === 'full') return getFullTime(date);
   if (mode === 'tweet') return getPostTime(date);
