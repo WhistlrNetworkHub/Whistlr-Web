@@ -70,3 +70,4 @@ Minis.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+

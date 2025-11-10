@@ -51,3 +51,4 @@ Discover.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+

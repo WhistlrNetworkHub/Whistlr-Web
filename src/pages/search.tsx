@@ -167,3 +167,4 @@ Search.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+

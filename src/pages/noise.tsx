@@ -51,3 +51,4 @@ Noise.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+

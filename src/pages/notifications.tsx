@@ -132,3 +132,4 @@ Notifications.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+

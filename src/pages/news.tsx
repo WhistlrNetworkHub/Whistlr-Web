@@ -47,3 +47,4 @@ News.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+

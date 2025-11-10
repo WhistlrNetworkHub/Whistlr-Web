@@ -47,3 +47,4 @@ Market.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+

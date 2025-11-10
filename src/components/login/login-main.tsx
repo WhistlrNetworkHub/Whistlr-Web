@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@lib/context/auth-context';
-import { NextImage } from '@components/ui/next-image';
 import { CustomIcon } from '@components/ui/custom-icon';
 import { Button } from '@components/ui/button';
+import { BackgroundCarousel } from './background-carousel';
 import toast from 'react-hot-toast';
 
 export function LoginMain(): JSX.Element {
@@ -36,18 +36,8 @@ export function LoginMain(): JSX.Element {
   if (showEmailForm) {
     return (
       <main className='grid lg:grid-cols-[1fr,45vw]'>
-        <div className='relative hidden items-center justify-center lg:flex'>
-          <NextImage
-            imgClassName='object-cover'
-            blurClassName='bg-accent-blue'
-            src='/assets/whistlr-banner.png'
-            alt='Whistlr banner'
-            layout='fill'
-            useSkeleton
-          />
-          <i className='absolute'>
-            <CustomIcon className='h-96 w-96 text-white' iconName='WhistlrIcon' />
-          </i>
+        <div className='relative hidden items-center justify-center overflow-hidden lg:flex'>
+          <BackgroundCarousel />
         </div>
         <div className='flex flex-col items-center justify-center gap-6 p-8'>
           <div className='w-full max-w-md'>
@@ -113,18 +103,8 @@ export function LoginMain(): JSX.Element {
 
   return (
     <main className='grid lg:grid-cols-[1fr,45vw]'>
-      <div className='relative hidden items-center justify-center lg:flex'>
-        <NextImage
-          imgClassName='object-cover'
-          blurClassName='bg-accent-blue'
-          src='/assets/whistlr-banner.png'
-          alt='Whistlr banner'
-          layout='fill'
-          useSkeleton
-        />
-        <i className='absolute'>
-          <CustomIcon className='h-96 w-96 text-white' iconName='WhistlrIcon' />
-        </i>
+      <div className='relative hidden items-center justify-center overflow-hidden lg:flex'>
+        <BackgroundCarousel />
       </div>
       <div className='flex flex-col items-center justify-between gap-6 p-8 lg:items-start lg:justify-center'>
         <i className='mb-0 self-center lg:mb-10 lg:self-auto'>

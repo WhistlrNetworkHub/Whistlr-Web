@@ -47,3 +47,4 @@ Waves.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
+
