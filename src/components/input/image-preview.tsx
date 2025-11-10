@@ -114,8 +114,8 @@ export function ImagePreview({
         />
       </Modal>
       <AnimatePresence mode='popLayout'>
-        {imagesPreview.map(({ id, src, alt }, index) => {
-          const isVideo = imagesPreview[index].type?.includes('video');
+        {imagesPreview?.map(({ id, src, alt }, index) => {
+          const isVideo = imagesPreview[index]?.type?.includes('video');
 
           return (
             <motion.button
