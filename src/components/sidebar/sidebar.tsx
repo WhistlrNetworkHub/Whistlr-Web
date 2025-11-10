@@ -88,14 +88,13 @@ export function Sidebar(): JSX.Element {
       >
         <section className='flex flex-col justify-center gap-2 xs:items-center xl:items-stretch'>
           <h1 className='hidden xs:flex'>
-            <Link href='/home'>
-              <a
-                className='custom-button main-tab text-accent-blue transition hover:bg-light-primary/10 
-                           focus-visible:bg-accent-blue/10 focus-visible:!ring-accent-blue/80
-                           dark:text-whistlr-icon dark:hover:bg-dark-primary/10'
-              >
-                <CustomIcon className='h-7 w-7' iconName='WhistlrIcon' />
-              </a>
+            <Link 
+              href='/home'
+              className='custom-button main-tab text-accent-blue transition hover:bg-light-primary/10 
+                         focus-visible:bg-accent-blue/10 focus-visible:!ring-accent-blue/80
+                         dark:text-whistlr-icon dark:hover:bg-dark-primary/10'
+            >
+              <CustomIcon className='h-7 w-7' iconName='WhistlrIcon' />
             </Link>
           </h1>
           <nav className='flex items-center justify-around xs:flex-col xs:justify-center xl:block'>

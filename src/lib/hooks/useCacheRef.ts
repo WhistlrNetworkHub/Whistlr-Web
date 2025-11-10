@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { refEqual } from 'firebase/firestore';
-import type { DocumentReference } from 'firebase/firestore';
 
+// Cache hook for Supabase document references
 export function useCacheRef<T>(
-  ref: DocumentReference<T>
-): DocumentReference<T> {
+  ref: any
+): any {
   const [cachedRef, setCachedRef] = useState(ref);
 
   useEffect(() => {

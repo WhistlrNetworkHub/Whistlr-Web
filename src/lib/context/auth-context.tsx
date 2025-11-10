@@ -41,12 +41,13 @@ export function AuthContextProvider({
       const photoURL = user_metadata?.avatar_url || user_metadata?.picture;
 
       const { data: existingUser } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', id)
         .single();
 
       if (!existingUser) {
+        // Profile should be auto-created by trigger, but check anyway
         let available = false;
         let randomUsername = '';
 
@@ -63,43 +64,30 @@ export function AuthContextProvider({
           if (isUsernameAvailable) available = true;
         }
 
-        const userData: User = {
+        const userData = {
           id,
+          username: randomUsername,
+          full_name: displayName,
+          avatar_url: photoURL ?? '/assets/whistlr-avatar.jpg',
           bio: null,
-          name: displayName,
-          email: authUser.email || null,
-          theme: null,
-          accent: null,
           website: null,
           location: null,
-          photoURL: photoURL ?? '/assets/whistlr-avatar.jpg',
-          username: randomUsername,
-          verified: false,
-          following: [],
-          followers: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: null,
-          totalTweets: 0,
-          totalPhotos: 0,
-          pinnedTweet: null,
-          coverPhotoURL: null
-        };
-
-        const userStatsData = {
-          userId: id,
-          likes: [],
-          tweets: [],
-          updatedAt: null
+          followers_count: 0,
+          following_count: 0,
+          posts_count: 0,
+          is_verified: false,
+          is_private: false,
+          is_online: true,
+          last_seen_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
 
         try {
-          await Promise.all([
-            supabase.from('users').insert(userData),
-            supabase.from('user_stats').insert(userStatsData)
-          ]);
+          await supabase.from('profiles').insert(userData);
 
           const { data: newUser } = await supabase
-            .from('users')
+            .from('profiles')
             .select('*')
             .eq('id', id)
             .single();
@@ -147,15 +135,15 @@ export function AuthContextProvider({
 
     const { id } = user;
 
-    // Subscribe to user changes
+    // Subscribe to profile changes
     const userChannel = supabase
-      .channel(`user:${id}`)
+      .channel(`profile:${id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'users',
+          table: 'profiles',
           filter: `id=eq.${id}`
         },
         (payload) => {
@@ -179,7 +167,7 @@ export function AuthContextProvider({
           const { data } = await supabase
             .from('bookmarks')
             .select('*')
-            .eq('userId', id);
+            .eq('user_id', id);
           setUserBookmarks(data as Bookmark[]);
         }
       )
@@ -189,7 +177,7 @@ export function AuthContextProvider({
     supabase
       .from('bookmarks')
       .select('*')
-      .eq('userId', id)
+      .eq('user_id', id)
       .then(({ data }) => {
         setUserBookmarks(data as Bookmark[]);
       });

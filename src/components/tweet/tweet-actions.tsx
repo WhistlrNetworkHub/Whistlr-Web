@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { doc, getDoc } from 'firebase/firestore';
+
 import { Popover } from '@headlessui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import cn from 'clsx';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@lib/context/auth-context';
 import { useModal } from '@lib/hooks/useModal';
-import { tweetsCollection } from '@lib/firebase/collections';
+import { tweetsCollection } from '@lib/supabase/collections';
 import {
   removeTweet,
   manageReply,

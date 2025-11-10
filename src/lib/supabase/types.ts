@@ -9,150 +9,222 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
           id: string
-          name: string
           username: string
-          email: string | null
+          full_name: string
+          avatar_url: string | null
           bio: string | null
           website: string | null
           location: string | null
-          photoURL: string
-          coverPhotoURL: string | null
-          verified: boolean
-          following: string[]
-          followers: string[]
-          theme: string | null
-          accent: string | null
-          totalTweets: number
-          totalPhotos: number
-          pinnedTweet: string | null
-          createdAt: string
-          updatedAt: string | null
+          followers_count: number
+          following_count: number
+          posts_count: number
+          is_verified: boolean
+          is_private: boolean
+          is_online: boolean
+          last_seen_at: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id: string
-          name: string
           username: string
-          email?: string | null
+          full_name: string
+          avatar_url?: string | null
           bio?: string | null
           website?: string | null
           location?: string | null
-          photoURL: string
-          coverPhotoURL?: string | null
-          verified?: boolean
-          following?: string[]
-          followers?: string[]
-          theme?: string | null
-          accent?: string | null
-          totalTweets?: number
-          totalPhotos?: number
-          pinnedTweet?: string | null
-          createdAt?: string
-          updatedAt?: string | null
+          followers_count?: number
+          following_count?: number
+          posts_count?: number
+          is_verified?: boolean
+          is_private?: boolean
+          is_online?: boolean
+          last_seen_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
-          name?: string
           username?: string
-          email?: string | null
+          full_name?: string
+          avatar_url?: string | null
           bio?: string | null
           website?: string | null
           location?: string | null
-          photoURL?: string
-          coverPhotoURL?: string | null
-          verified?: boolean
-          following?: string[]
-          followers?: string[]
-          theme?: string | null
-          accent?: string | null
-          totalTweets?: number
-          totalPhotos?: number
-          pinnedTweet?: string | null
-          createdAt?: string
-          updatedAt?: string | null
+          followers_count?: number
+          following_count?: number
+          posts_count?: number
+          is_verified?: boolean
+          is_private?: boolean
+          is_online?: boolean
+          last_seen_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
-      tweets: {
+      posts: {
         Row: {
           id: string
-          text: string
-          images: Json | null
-          parent: { id: string; username: string } | null
-          userLikes: string[]
-          userReplies: number
-          userRetweets: string[]
-          createdBy: string
-          createdAt: string
-          updatedAt: string | null
-        }
-        Insert: {
-          id: string
-          text: string
-          images?: Json | null
-          parent?: { id: string; username: string } | null
-          userLikes?: string[]
-          userReplies?: number
-          userRetweets?: string[]
-          createdBy: string
-          createdAt?: string
-          updatedAt?: string | null
-        }
-        Update: {
-          id?: string
-          text?: string
-          images?: Json | null
-          parent?: { id: string; username: string } | null
-          userLikes?: string[]
-          userReplies?: number
-          userRetweets?: string[]
-          createdBy?: string
-          createdAt?: string
-          updatedAt?: string | null
-        }
-      }
-      user_stats: {
-        Row: {
-          id: string
-          userId: string
-          likes: string[]
-          tweets: string[]
-          updatedAt: string | null
+          user_id: string
+          caption: string | null
+          media_url: string | null
+          media_type: string | null
+          parent_id: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
-          userId: string
-          likes?: string[]
-          tweets?: string[]
-          updatedAt?: string | null
+          user_id: string
+          caption?: string | null
+          media_url?: string | null
+          media_type?: string | null
+          parent_id?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
-          userId?: string
-          likes?: string[]
-          tweets?: string[]
-          updatedAt?: string | null
+          user_id?: string
+          caption?: string | null
+          media_url?: string | null
+          media_type?: string | null
+          parent_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      comments: {
+        Row: {
+          id: string
+          post_id: string
+          user_id: string
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          user_id: string
+          content: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          user_id?: string
+          content?: string
+          created_at?: string
+        }
+      }
+      follows: {
+        Row: {
+          id: string
+          follower_id: string
+          following_id: string
+          created_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          follower_id: string
+          following_id: string
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          follower_id?: string
+          following_id?: string
+          created_at?: string
+          deleted_at?: string | null
+        }
+      }
+      whistles: {
+        Row: {
+          id: string
+          user_id: string
+          post_id: string
+          created_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          post_id: string
+          created_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          post_id?: string
+          created_at?: string
+          deleted_at?: string | null
         }
       }
       bookmarks: {
         Row: {
           id: string
-          userId: string
-          tweetId: string
-          createdAt: string
+          user_id: string
+          post_id: string
+          created_at: string
         }
         Insert: {
           id?: string
-          userId: string
-          tweetId: string
-          createdAt?: string
+          user_id: string
+          post_id: string
+          created_at?: string
         }
         Update: {
           id?: string
-          userId?: string
-          tweetId?: string
-          createdAt?: string
+          user_id?: string
+          post_id?: string
+          created_at?: string
+        }
+      }
+      post_signals: {
+        Row: {
+          id: string
+          post_id: string
+          views: number
+          whistles: number
+          boosts: number
+          quote_boosts: number
+          comments: number
+          saves: number
+          shares: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          views?: number
+          whistles?: number
+          boosts?: number
+          quote_boosts?: number
+          comments?: number
+          saves?: number
+          shares?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          views?: number
+          whistles?: number
+          boosts?: number
+          quote_boosts?: number
+          comments?: number
+          saves?: number
+          shares?: number
+          created_at?: string
+          updated_at?: string
         }
       }
     }
@@ -167,4 +239,3 @@ export interface Database {
     }
   }
 }
-

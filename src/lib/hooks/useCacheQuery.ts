@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { queryEqual } from 'firebase/firestore';
-import type { Query } from 'firebase/firestore';
 
-export function useCacheQuery<T>(query: Query<T>): Query<T> {
+// Cache hook for Supabase queries
+export function useCacheQuery<T>(query: any): any {
   const [cachedQuery, setCachedQuery] = useState(query);
 
   useEffect(() => {

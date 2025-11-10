@@ -7,7 +7,7 @@ export async function checkUsernameAvailability(
   username: string
 ): Promise<boolean> {
   const { data } = await supabase
-    .from('users')
+    .from('profiles')
     .select('id')
     .eq('username', username)
     .limit(1);
@@ -34,7 +34,7 @@ export async function updateUserData(
   userData: EditableUserData
 ): Promise<void> {
   await supabase
-    .from('users')
+    .from('profiles')
     .update({
       ...userData,
       updatedAt: new Date().toISOString()
@@ -47,7 +47,7 @@ export async function updateUserTheme(
   themeData: { theme?: Theme; accent?: Accent }
 ): Promise<void> {
   await supabase
-    .from('users')
+    .from('profiles')
     .update(themeData)
     .eq('id', userId);
 }
@@ -57,7 +57,7 @@ export async function updateUsername(
   username?: string
 ): Promise<void> {
   await supabase
-    .from('users')
+    .from('profiles')
     .update({
       ...(username && { username }),
       updatedAt: new Date().toISOString()
@@ -71,7 +71,7 @@ export async function managePinnedTweet(
   tweetId: string
 ): Promise<void> {
   await supabase
-    .from('users')
+    .from('profiles')
     .update({
       updatedAt: new Date().toISOString(),
       pinnedTweet: type === 'pin' ? tweetId : null
@@ -85,13 +85,13 @@ export async function manageFollow(
   targetUserId: string
 ): Promise<void> {
   const { data: user } = await supabase
-    .from('users')
+    .from('profiles')
     .select('following')
     .eq('id', userId)
     .single();
 
   const { data: targetUser } = await supabase
-    .from('users')
+    .from('profiles')
     .select('followers')
     .eq('id', targetUserId)
     .single();
@@ -104,14 +104,14 @@ export async function manageFollow(
   if (type === 'follow') {
     await Promise.all([
       supabase
-        .from('users')
+        .from('profiles')
         .update({
           following: [...following, targetUserId],
           updatedAt: new Date().toISOString()
         })
         .eq('id', userId),
       supabase
-        .from('users')
+        .from('profiles')
         .update({
           followers: [...followers, userId],
           updatedAt: new Date().toISOString()
@@ -121,14 +121,14 @@ export async function manageFollow(
   } else {
     await Promise.all([
       supabase
-        .from('users')
+        .from('profiles')
         .update({
           following: following.filter((id) => id !== targetUserId),
           updatedAt: new Date().toISOString()
         })
         .eq('id', userId),
       supabase
-        .from('users')
+        .from('profiles')
         .update({
           followers: followers.filter((id) => id !== userId),
           updatedAt: new Date().toISOString()
@@ -139,7 +139,7 @@ export async function manageFollow(
 }
 
 export async function removeTweet(tweetId: string): Promise<void> {
-  await supabase.from('tweets').delete().eq('id', tweetId);
+  await supabase.from('posts').delete().eq('id', tweetId);
 }
 
 export async function uploadImages(
@@ -154,13 +154,13 @@ export async function uploadImages(
       const filePath = `images/${userId}/${id}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('tweets')
+        .from('posts')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('tweets')
+        .from('posts')
         .getPublicUrl(filePath);
 
       return { id, src: publicUrl, alt, type };
@@ -175,7 +175,7 @@ export async function manageReply(
   tweetId: string
 ): Promise<void> {
   const { data: tweet } = await supabase
-    .from('tweets')
+    .from('posts')
     .select('userReplies')
     .eq('id', tweetId)
     .single();
@@ -183,7 +183,7 @@ export async function manageReply(
   if (!tweet) return;
 
   await supabase
-    .from('tweets')
+    .from('posts')
     .update({
       userReplies: tweet.userReplies + (type === 'increment' ? 1 : -1),
       updatedAt: new Date().toISOString()
@@ -196,7 +196,7 @@ export async function manageTotalTweets(
   userId: string
 ): Promise<void> {
   const { data: user } = await supabase
-    .from('users')
+    .from('profiles')
     .select('totalTweets')
     .eq('id', userId)
     .single();
@@ -204,7 +204,7 @@ export async function manageTotalTweets(
   if (!user) return;
 
   await supabase
-    .from('users')
+    .from('profiles')
     .update({
       totalTweets: user.totalTweets + (type === 'increment' ? 1 : -1),
       updatedAt: new Date().toISOString()
@@ -217,7 +217,7 @@ export async function manageTotalPhotos(
   userId: string
 ): Promise<void> {
   const { data: user } = await supabase
-    .from('users')
+    .from('profiles')
     .select('totalPhotos')
     .eq('id', userId)
     .single();
@@ -225,7 +225,7 @@ export async function manageTotalPhotos(
   if (!user) return;
 
   await supabase
-    .from('users')
+    .from('profiles')
     .update({
       totalPhotos: user.totalPhotos + (type === 'increment' ? 1 : -1),
       updatedAt: new Date().toISOString()
@@ -241,7 +241,7 @@ export function manageRetweet(
   return async (): Promise<void> => {
     const [{ data: tweet }, { data: stats }] = await Promise.all([
       supabase
-        .from('tweets')
+        .from('posts')
         .select('userRetweets')
         .eq('id', tweetId)
         .single(),
@@ -260,7 +260,7 @@ export function manageRetweet(
     if (type === 'retweet') {
       await Promise.all([
         supabase
-          .from('tweets')
+          .from('posts')
           .update({
             userRetweets: [...userRetweets, userId],
             updatedAt: new Date().toISOString()
@@ -277,7 +277,7 @@ export function manageRetweet(
     } else {
       await Promise.all([
         supabase
-          .from('tweets')
+          .from('posts')
           .update({
             userRetweets: userRetweets.filter((id) => id !== userId),
             updatedAt: new Date().toISOString()
@@ -303,7 +303,7 @@ export function manageLike(
   return async (): Promise<void> => {
     const [{ data: tweet }, { data: stats }] = await Promise.all([
       supabase
-        .from('tweets')
+        .from('posts')
         .select('userLikes')
         .eq('id', tweetId)
         .single(),
@@ -322,7 +322,7 @@ export function manageLike(
     if (type === 'like') {
       await Promise.all([
         supabase
-          .from('tweets')
+          .from('posts')
           .update({
             userLikes: [...userLikes, userId],
             updatedAt: new Date().toISOString()
@@ -339,7 +339,7 @@ export function manageLike(
     } else {
       await Promise.all([
         supabase
-          .from('tweets')
+          .from('posts')
           .update({
             userLikes: userLikes.filter((id) => id !== userId),
             updatedAt: new Date().toISOString()

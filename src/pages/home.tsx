@@ -1,8 +1,7 @@
 import { AnimatePresence } from 'framer-motion';
-import { where, orderBy } from 'firebase/firestore';
 import { useWindow } from '@lib/context/window-context';
 import { useInfiniteScroll } from '@lib/hooks/useInfiniteScroll';
-import { tweetsCollection } from '@lib/firebase/collections';
+import { tweetsCollection } from '@lib/supabase/collections';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
@@ -20,7 +19,10 @@ export default function Home(): JSX.Element {
 
   const { data, loading, LoadMore } = useInfiniteScroll(
     tweetsCollection,
-    [where('parent', '==', null), orderBy('createdAt', 'desc')],
+    {
+      filters: [{ column: 'parent_post_id', operator: 'is', value: null }],
+      orderBy: { column: 'created_at', ascending: false }
+    },
     { includeUser: true, allowNull: true, preserve: true }
   );
 

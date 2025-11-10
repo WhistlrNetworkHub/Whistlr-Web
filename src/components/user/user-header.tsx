@@ -1,10 +1,10 @@
 import { useRouter } from 'next/router';
-import { doc } from 'firebase/firestore';
+
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDocument } from '@lib/hooks/useDocument';
 import { useUser } from '@lib/context/user-context';
 import { isPlural } from '@lib/utils';
-import { userStatsCollection } from '@lib/firebase/collections';
+import { userStatsCollection } from '@lib/supabase/collections';
 import { UserName } from './user-name';
 import type { Variants } from 'framer-motion';
 

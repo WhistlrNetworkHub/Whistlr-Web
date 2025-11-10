@@ -1,4 +1,4 @@
-import type { Timestamp } from 'firebase/firestore';
+// Date utilities for Whistlr
 
 const RELATIVE_TIME_FORMATTER = new Intl.RelativeTimeFormat('en-gb', {
   style: 'short',

@@ -1,6 +1,6 @@
-import type { Timestamp } from 'firebase/firestore';
+// Merge utilities for Whistlr
 
-type DataWithDate<T> = T & { createdAt: Timestamp };
+type DataWithDate<T> = T & { created_at: string };
 
 export function mergeData<T>(
   sortData: boolean,

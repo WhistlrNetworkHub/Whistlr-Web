@@ -1,7 +1,7 @@
 import { AnimatePresence } from 'framer-motion';
-import { query, where, orderBy } from 'firebase/firestore';
+
 import { useCollection } from '@lib/hooks/useCollection';
-import { tweetsCollection } from '@lib/firebase/collections';
+import { tweetsCollection } from '@lib/supabase/collections';
 import { useUser } from '@lib/context/user-context';
 import { UserLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';

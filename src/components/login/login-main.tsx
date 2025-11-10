@@ -133,12 +133,11 @@ export function LoginMain(): JSX.Element {
             iconName='WhistlrIcon'
           />
         </i>
-        <div className='flex max-w-xs flex-col gap-4 font-whistlr-chirp-extended lg:max-w-none lg:gap-16'>
-          <h1
-            className='text-3xl before:content-["See_what's_happening_in_the_world_right_now."] 
-                       lg:text-6xl lg:before:content-["Happening_now"]'
-          />
-          <h2 className='hidden text-xl lg:block lg:text-3xl'>
+        <div className='flex max-w-xs flex-col gap-4 lg:max-w-none lg:gap-16'>
+          <h1 className='text-3xl lg:text-6xl font-bold'>
+            Happening now
+          </h1>
+          <h2 className='text-xl lg:text-3xl font-bold'>
             Join Whistlr today.
           </h2>
         </div>

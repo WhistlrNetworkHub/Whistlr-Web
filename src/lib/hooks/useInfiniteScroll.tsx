@@ -2,13 +2,29 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { query, limit } from 'firebase/firestore';
-import { getCollectionCount } from '@lib/supabase/utils';
+import { supabase } from '@lib/supabase/client';
 import { Loading } from '@components/ui/loading';
-import { useCollection } from './useCollection';
-import type { UseCollectionOptions } from './useCollection';
-import type { Query, QueryConstraint } from 'firebase/firestore';
 import type { User } from '@lib/types/user';
+
+type FilterOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'is' | 'in';
+
+type QueryFilter = {
+  column: string;
+  operator: FilterOperator;
+  value: any;
+};
+
+type QueryOptions = {
+  filters?: QueryFilter[];
+  orderBy?: { column: string; ascending?: boolean };
+};
+
+type UseCollectionOptions = {
+  includeUser?: boolean;
+  allowNull?: boolean;
+  preserve?: boolean;
+  disabled?: boolean;
+};
 
 type InfiniteScroll<T> = {
   data: T[] | null;
@@ -23,22 +39,22 @@ type InfiniteScrollWithUser<T> = {
 };
 
 export function useInfiniteScroll<T>(
-  collection: Query<T>,
-  constraints: QueryConstraint[],
+  tableName: string,
+  queryOptions: QueryOptions,
   fetchOptions: UseCollectionOptions & { includeUser: true },
   options?: { initialSize?: number; stepSize?: number; marginBottom?: number }
 ): InfiniteScrollWithUser<T>;
 
 export function useInfiniteScroll<T>(
-  collection: Query<T>,
-  constraints: QueryConstraint[],
+  tableName: string,
+  queryOptions: QueryOptions,
   fetchOptions?: UseCollectionOptions,
   options?: { initialSize?: number; stepSize?: number; marginBottom?: number }
 ): InfiniteScroll<T>;
 
 export function useInfiniteScroll<T>(
-  collection: Query<T>,
-  queryConstraints?: QueryConstraint[],
+  tableName: string,
+  queryOptions: QueryOptions = {},
   fetchOptions?: UseCollectionOptions,
   options?: { initialSize?: number; stepSize?: number; marginBottom?: number }
 ): InfiniteScroll<T> | InfiniteScrollWithUser<T> {
@@ -48,17 +64,63 @@ export function useInfiniteScroll<T>(
   const [tweetsSize, setTweetsSize] = useState<number | null>(null);
   const [reachedLimit, setReachedLimit] = useState(false);
   const [loadMoreInView, setLoadMoreInView] = useState(false);
+  const [data, setData] = useState<T[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const { data, loading } = useCollection(
-    query(
-      collection,
-      ...[
-        ...(queryConstraints ?? []),
-        ...(!reachedLimit ? [limit(tweetsLimit)] : [])
-      ]
-    ),
-    fetchOptions
-  );
+  const fetchData = useCallback(async () => {
+    if (fetchOptions?.disabled) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      let query = supabase.from(tableName).select(
+        fetchOptions?.includeUser
+          ? '*, user:created_by(*)' 
+          : '*'
+      );
+
+      // Apply filters
+      if (queryOptions.filters) {
+        for (const filter of queryOptions.filters) {
+          if (filter.operator === 'is') {
+            query = query.is(filter.column, filter.value);
+          } else if (filter.operator === 'in') {
+            query = query.in(filter.column, filter.value);
+          } else {
+            query = query[filter.operator](filter.column, filter.value);
+          }
+        }
+      }
+
+      // Apply ordering
+      if (queryOptions.orderBy) {
+        query = query.order(queryOptions.orderBy.column, {
+          ascending: queryOptions.orderBy.ascending ?? false
+        });
+      }
+
+      // Apply limit
+      if (!reachedLimit) {
+        query = query.limit(tweetsLimit);
+      }
+
+      const { data: result, error } = await query;
+
+      if (error) throw error;
+      setData(result as T[]);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [tableName, JSON.stringify(queryOptions), tweetsLimit, reachedLimit, fetchOptions?.disabled, fetchOptions?.includeUser]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     const checkLimit = tweetsSize ? tweetsLimit >= tweetsSize : false;
@@ -69,10 +131,30 @@ export function useInfiniteScroll<T>(
     if (reachedLimit) return;
 
     const setTweetsLength = async (): Promise<void> => {
-      const currentTweetsSize = await getCollectionCount(
-        query(collection, ...(queryConstraints ?? []))
-      );
-      setTweetsSize(currentTweetsSize);
+      try {
+        let countQuery = supabase
+          .from(tableName)
+          .select('*', { count: 'exact', head: true });
+
+        // Apply same filters for count
+        if (queryOptions.filters) {
+          for (const filter of queryOptions.filters) {
+            if (filter.operator === 'is') {
+              countQuery = countQuery.is(filter.column, filter.value);
+            } else if (filter.operator === 'in') {
+              countQuery = countQuery.in(filter.column, filter.value);
+            } else {
+              countQuery = countQuery[filter.operator](filter.column, filter.value);
+            }
+          }
+        }
+
+        const { count, error } = await countQuery;
+        if (error) throw error;
+        setTweetsSize(count ?? 0);
+      } catch (err) {
+        console.error('Error getting count:', err);
+      }
     };
 
     void setTweetsLength();

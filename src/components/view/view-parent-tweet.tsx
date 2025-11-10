@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { doc } from 'firebase/firestore';
+
 import { useDocument } from '@lib/hooks/useDocument';
-import { tweetsCollection } from '@lib/firebase/collections';
+import { tweetsCollection } from '@lib/supabase/collections';
 import { Tweet } from '@components/tweet/tweet';
 import type { RefObject } from 'react';
 

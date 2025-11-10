@@ -2,7 +2,7 @@ import { useState } from 'react';
 import cn from 'clsx';
 import { useArrayDocument } from '@lib/hooks/useArrayDocument';
 import { useModal } from '@lib/hooks/useModal';
-import { usersCollection } from '@lib/firebase/collections';
+import { usersCollection } from '@lib/supabase/collections';
 import { Modal } from '@components/modal/modal';
 import { TweetStatsModal } from '@components/modal/tweet-stats-modal';
 import { NumberStats } from '@components/tweet/number-stats';

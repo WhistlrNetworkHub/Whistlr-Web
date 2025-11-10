@@ -1,9 +1,9 @@
-import { doc, query, where } from 'firebase/firestore';
+
 import { AnimatePresence } from 'framer-motion';
 import { useUser } from '@lib/context/user-context';
 import { useCollection } from '@lib/hooks/useCollection';
 import { useDocument } from '@lib/hooks/useDocument';
-import { tweetsCollection } from '@lib/firebase/collections';
+import { tweetsCollection } from '@lib/supabase/collections';
 import { mergeData } from '@lib/merge';
 import { UserLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
