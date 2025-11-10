@@ -19,7 +19,8 @@ export default function Home(): JSX.Element {
   const { data, loading, LoadMore } = useInfiniteScroll(
     tweetsCollection,
     {
-      orderBy: { column: 'created_at', ascending: false }
+      orderBy: { column: 'created_at', ascending: false },
+      filters: [{ column: 'media_type', operator: 'neq', value: 'video' }]
     },
     { includeUser: true, allowNull: true }
   );

@@ -1,16 +1,10 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
 import { useAuth } from '@lib/context/auth-context';
 import { useModal } from '@lib/hooks/useModal';
-import { useCollection } from '@lib/hooks/useCollection';
-import { useArrayDocument } from '@lib/hooks/useArrayDocument';
-import { clearAllBookmarks } from '@lib/supabase/utils';
-import {
-  tweetsCollection,
-  userBookmarksCollection
-} from '@lib/supabase/collections';
+import { supabase } from '@lib/supabase/client';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
@@ -25,34 +19,75 @@ import { ToolTip } from '@components/ui/tooltip';
 import { HeroIcon } from '@components/ui/hero-icon';
 import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
+import type { Tweet as TweetType } from '@lib/types/tweet';
 
 export default function Bookmarks(): JSX.Element {
   const { user } = useAuth();
-
   const { open, openModal, closeModal } = useModal();
 
-  const userId = user?.id as string;
+  const [bookmarkedTweets, setBookmarkedTweets] = useState<TweetType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: bookmarksRef, loading: bookmarksRefLoading } = useCollection(
-    query(userBookmarksCollection(userId), orderBy('createdAt', 'desc')),
-    { allowNull: true }
-  );
+  useEffect(() => {
+    if (!user?.id) return;
 
-  const tweetIds = useMemo(
-    () => bookmarksRef?.map(({ id }) => id) ?? [],
-    [bookmarksRef]
-  );
+    const fetchBookmarks = async () => {
+      try {
+        // Fetch bookmarked post IDs
+        const { data: bookmarks, error: bookmarksError } = await supabase
+          .from('post_saves')
+          .select('post_id')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-  const { data: tweetData, loading: tweetLoading } = useArrayDocument(
-    tweetIds,
-    tweetsCollection,
-    { includeUser: true }
-  );
+        if (bookmarksError) throw bookmarksError;
+
+        if (!bookmarks || bookmarks.length === 0) {
+          setBookmarkedTweets([]);
+          setLoading(false);
+          return;
+        }
+
+        const postIds = bookmarks.map((b) => b.post_id);
+
+        // Fetch the actual posts with user data
+        const { data: posts, error: postsError } = await supabase
+          .from('posts')
+          .select('*, user:author_id(*)')
+          .in('id', postIds);
+
+        if (postsError) throw postsError;
+
+        setBookmarkedTweets(posts || []);
+      } catch (error) {
+        console.error('Error fetching bookmarks:', error);
+        toast.error('Failed to load bookmarks');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookmarks();
+  }, [user?.id]);
 
   const handleClear = async (): Promise<void> => {
-    await clearAllBookmarks(userId);
-    closeModal();
-    toast.success('Successfully cleared all bookmarks');
+    if (!user?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('post_saves')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setBookmarkedTweets([]);
+      closeModal();
+      toast.success('Successfully cleared all bookmarks');
+    } catch (error) {
+      console.error('Error clearing bookmarks:', error);
+      toast.error('Failed to clear bookmarks');
+    }
   };
 
   return (
@@ -94,17 +129,17 @@ export default function Bookmarks(): JSX.Element {
         </Button>
       </MainHeader>
       <section className='mt-0.5'>
-        {bookmarksRefLoading || tweetLoading ? (
+        {loading ? (
           <Loading className='mt-5' />
-        ) : !bookmarksRef ? (
+        ) : bookmarkedTweets.length === 0 ? (
           <StatsEmpty
             title='Save Tweets for later'
-            description='Don’t let the good ones fly away! Bookmark Tweets to easily find them again in the future.'
+            description='Don't let the good ones fly away! Bookmark Tweets to easily find them again in the future.'
             imageData={{ src: '/assets/no-bookmarks.png', alt: 'No bookmarks' }}
           />
         ) : (
           <AnimatePresence mode='popLayout'>
-            {tweetData?.map((tweet) => (
+            {bookmarkedTweets.map((tweet) => (
               <Tweet {...tweet} key={tweet.id} />
             ))}
           </AnimatePresence>
