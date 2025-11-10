@@ -16,6 +16,8 @@ type AuthContext = {
   userBookmarks: Bookmark[] | null;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, name: string) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContext | null>(null);
@@ -70,7 +72,7 @@ export function AuthContextProvider({
           accent: null,
           website: null,
           location: null,
-          photoURL: photoURL ?? '/assets/twitter-avatar.jpg',
+          photoURL: photoURL ?? '/assets/whistlr-avatar.jpg',
           username: randomUsername,
           verified: false,
           following: [],
@@ -212,6 +214,43 @@ export function AuthContextProvider({
     }
   };
 
+  const signInWithEmail = async (email: string, password: string): Promise<void> => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) throw error;
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (
+    email: string,
+    password: string,
+    name: string
+  ): Promise<void> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      });
+      if (error) throw error;
+      
+      // User will be created in manageUser when auth state changes
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
   const signOut = async (): Promise<void> => {
     try {
       await supabase.auth.signOut();
@@ -231,7 +270,9 @@ export function AuthContextProvider({
     randomSeed,
     userBookmarks,
     signOut,
-    signInWithGoogle
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

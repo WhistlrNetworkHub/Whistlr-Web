@@ -15,7 +15,7 @@ const Icons = {
   AppleIcon,
   PinOffIcon,
   GoogleIcon,
-  TwitterIcon,
+  WhistlrIcon,
   FeatherIcon,
   SpinnerIcon,
   TriangleIcon
@@ -30,7 +30,7 @@ export function CustomIcon({
   return <Icon className={className ?? 'h-6 w-6'} />;
 }
 
-function TwitterIcon({ className }: IconProps): JSX.Element {
+function WhistlrIcon({ className }: IconProps): JSX.Element {
   return (
     <svg className={cn('fill-current', className)} viewBox='0 0 24 24'>
       <g>

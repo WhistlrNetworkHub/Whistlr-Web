@@ -19,7 +19,7 @@ export default async function placeIdEndpoint(
   const { id, limit } = req.query as PlaceIdEndpointQuery;
 
   const response = await fetch(
-    `https://api.twitter.com/1.1/trends/place.json?id=${id}`,
+    `https://api.whistlr.com/1.1/trends/place.json?id=${id}`,
     AUTH
   );
 

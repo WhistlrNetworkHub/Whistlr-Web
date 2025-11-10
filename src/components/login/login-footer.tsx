@@ -1,23 +1,23 @@
 const footerLinks = [
-  ['About', 'https://about.twitter.com'],
-  ['Help Center', 'https://help.twitter.com'],
-  ['Privacy Policy', 'https://twitter.com/tos'],
-  ['Cookie Policy', 'https://support.twitter.com/articles/20170514'],
-  ['Accessibility', 'https://help.twitter.com/resources/accessibility'],
+  ['About', 'https://about.whistlr.com'],
+  ['Help Center', 'https://help.whistlr.com'],
+  ['Privacy Policy', 'https://whistlr.com/tos'],
+  ['Cookie Policy', 'https://support.whistlr.com/articles/20170514'],
+  ['Accessibility', 'https://help.whistlr.com/resources/accessibility'],
   [
     'Ads Info',
-    'https://business.twitter.com/en/help/troubleshooting/how-twitter-ads-work.html'
+    'https://business.whistlr.com/en/help/troubleshooting/how-whistlr-ads-work.html'
   ],
-  ['Blog', 'https://blog.twitter.com'],
-  ['Status', 'https://status.twitterstat.us'],
-  ['Careers', 'https://careers.twitter.com'],
-  ['Brand Resources', 'https://about.twitter.com/press/brand-assets'],
-  ['Advertising', 'https://ads.twitter.com/?ref=gl-tw-tw-twitter-advertise'],
-  ['Marketing', 'https://marketing.twitter.com'],
-  ['Twitter for Business', 'https://business.twitter.com'],
-  ['Developers', 'https://developer.twitter.com'],
-  ['Directory', 'https://twitter.com/i/directory/profiles'],
-  ['Settings', 'https://twitter.com/settings']
+  ['Blog', 'https://blog.whistlr.com'],
+  ['Status', 'https://status.whistlrstat.us'],
+  ['Careers', 'https://careers.whistlr.com'],
+  ['Brand Resources', 'https://about.whistlr.com/press/brand-assets'],
+  ['Advertising', 'https://ads.whistlr.com/?ref=gl-tw-tw-whistlr-advertise'],
+  ['Marketing', 'https://marketing.whistlr.com'],
+  ['Whistlr for Business', 'https://business.whistlr.com'],
+  ['Developers', 'https://developer.whistlr.com'],
+  ['Directory', 'https://whistlr.com/i/directory/profiles'],
+  ['Settings', 'https://whistlr.com/settings']
 ] as const;
 
 export function LoginFooter(): JSX.Element {
@@ -35,7 +35,7 @@ export function LoginFooter(): JSX.Element {
             {linkName}
           </a>
         ))}
-        <p>© 2022 Twitter, Inc.</p>
+        <p>© 2022 Whistlr, Inc.</p>
       </nav>
     </footer>
   );

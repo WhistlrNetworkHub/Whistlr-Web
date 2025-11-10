@@ -7,7 +7,7 @@ export default async function availableEndpoint(
   res: NextApiResponse<AvailablePlaces>
 ): Promise<void> {
   const response = await fetch(
-    'https://api.twitter.com/1.1/trends/available.json',
+    'https://api.whistlr.com/1.1/trends/available.json',
     AUTH
   );
 

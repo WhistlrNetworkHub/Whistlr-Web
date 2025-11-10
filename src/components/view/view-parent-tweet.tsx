@@ -35,7 +35,7 @@ export function ViewParentTweet({
           This Tweet was deleted by the Tweet author.{' '}
           <a
             className='custom-underline text-main-accent'
-            href='https://help.twitter.com/rules-and-policies/notices-on-twitter'
+            href='https://help.whistlr.com/rules-and-policies/notices-on-whistlr'
             target='_blank'
             rel='noreferrer'
           >

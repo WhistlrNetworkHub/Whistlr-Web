@@ -1,6 +1,9 @@
 {
-  "name": "twitter-clone-supabase",
+  "name": "whistlr-web",
   "version": "2.0.0",
+  "description": "Whistlr - Modern social platform powered by Supabase",
+  "author": "ETAProjects Inc. <contact@etaprojects.io>",
+  "license": "UNLICENSED",
   "private": true,
   "scripts": {
     "dev": "next dev -p 4422",
