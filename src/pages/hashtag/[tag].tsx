@@ -18,7 +18,7 @@ export default function HashtagPage(): JSX.Element {
   const { data, loading, LoadMore } = useInfiniteScroll(
     'posts',
     {
-      filters: tag ? [{ column: 'hashtags', operator: 'contains', value: `#${tag}` }] : [],
+      filters: tag ? [{ column: 'hashtags', operator: 'contains', value: tag as string }] : [],
       orderBy: { column: 'created_at', ascending: false }
     },
     { includeUser: true, allowNull: true, disabled: !tag }

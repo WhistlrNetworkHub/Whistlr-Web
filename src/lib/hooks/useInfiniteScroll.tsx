@@ -16,7 +16,7 @@ interface QueryOptions {
   };
   filters?: Array<{
     column: string;
-    operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'is' | 'in';
+    operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'is' | 'in' | 'contains' | 'ilike';
     value: any;
   }>;
 }
@@ -88,6 +88,10 @@ export function useInfiniteScroll<T>(
               query = query.is(filter.column, filter.value);
             } else if (filter.operator === 'in') {
               query = query.in(filter.column, filter.value);
+            } else if (filter.operator === 'contains') {
+              query = query.contains(filter.column, [filter.value]);
+            } else if (filter.operator === 'ilike') {
+              query = query.ilike(filter.column, filter.value);
             } else {
               query = query[filter.operator](filter.column, filter.value);
             }
