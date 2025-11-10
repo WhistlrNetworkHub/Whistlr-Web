@@ -35,7 +35,7 @@ export function LoginFooter(): JSX.Element {
             {linkName}
           </a>
         ))}
-        <p>© 2022 Whistlr, Inc.</p>
+        <p>© 2026 Whistlr Network</p>
       </nav>
     </footer>
   );
