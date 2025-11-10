@@ -51,7 +51,7 @@ export function LoginMain(): JSX.Element {
               ← Back
             </button>
             <h2 className='mb-6 text-3xl font-bold'>
-              Discover.<span className='animated-gradient'>Connect</span>.Explore
+              Discover.<span className='animated-gradient'>Connect</span> Explore
             </h2>
             <h3 className='mb-6 text-xl font-semibold'>
               {isSignUp ? 'Create your account' : 'Sign in to Whistlr'}
@@ -119,7 +119,7 @@ export function LoginMain(): JSX.Element {
         <div className='flex max-w-xs flex-col gap-4 lg:max-w-none lg:gap-16'>
           <h1 className='text-3xl lg:text-6xl font-bold'>
             Discover.
-            <span className='animated-gradient'>Connect</span>.Explore
+            <span className='animated-gradient'>Connect</span> Explore
           </h1>
           <h2 className='text-xl lg:text-3xl font-bold'>
             Join Whistlr today.
