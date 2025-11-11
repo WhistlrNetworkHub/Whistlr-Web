@@ -279,7 +279,7 @@ export default function Search(): JSX.Element {
               <div className='mb-8'>
                 <div className='flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide'>
                   {results.slice(0, 4).map((post, index) => (
-                    <Link key={post.id} href={selectedCategory === 'Creators' ? `/user/${post.user?.id}` : `/tweet/${post.id}`}>
+                    <Link key={post.id} href={selectedCategory === 'Creators' ? `/user/${post.user?.username}` : `/tweet/${post.id}`}>
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -434,7 +434,7 @@ export default function Search(): JSX.Element {
               /* Grid layout for Creators */
               <div className='grid grid-cols-2 gap-3'>
                 {results.map((post, index) => (
-                  <Link key={post.id} href={`/user/${post.user?.id}`}>
+                  <Link key={post.id} href={`/user/${post.user?.username}`}>
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
