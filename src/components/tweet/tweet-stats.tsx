@@ -31,8 +31,8 @@ export function TweetStats({
   userReplies: totalReplies,
   openModal
 }: TweetStatsProps): JSX.Element {
-  const totalLikes = userLikes.length;
-  const totalTweets = userRetweets.length;
+  const totalLikes = userLikes?.length || 0;
+  const totalTweets = userRetweets?.length || 0;
 
   const [{ currentReplies, currentTweets, currentLikes }, setCurrentStats] =
     useState({

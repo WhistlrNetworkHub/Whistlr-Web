@@ -147,8 +147,8 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
               {content && <p className='whitespace-pre-wrap break-words'>{content}</p>}
               {images && Array.isArray(images) && images.length > 0 && (
                 <ImagePreview
-                  tweetId={tweetId}
-                  images={images}
+                  tweet
+                  imagesPreview={images}
                   previewCount={images.length}
                 />
               )}
@@ -171,11 +171,12 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
       {modal && (
         <TweetStats
           userId={userId}
+          isOwner={isOwner}
           tweetId={tweetId}
           reply={false}
-          likeMove={likes_count}
-          tweetMove={reposts_count}
-          replyMove={comments_count}
+          userLikes={[]}
+          userRetweets={[]}
+          userReplies={comments_count || 0}
         />
       )}
     </motion.article>
