@@ -14,7 +14,7 @@ import type { ReactElement, ReactNode } from 'react';
 interface Mini {
   id: string;
   content: string;
-  media_url: string[];
+  media_urls: string[];
   media_type: string;
   likes_count: number;
   comments_count: number;
@@ -34,22 +34,28 @@ export default function Minis(): JSX.Element {
   const [minis, setMinis] = useState<Mini[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const playerRefs = useRef<any[]>([]);
+  const playingRef = useRef<number>(-1);
 
   useEffect(() => {
     const fetchMinis = async () => {
+      console.log('🎥 Fetching minis...');
+      
       const { data, error } = await supabase
         .from('posts')
         .select('*, user:author_id(*)')
         .eq('media_type', 'video')
-        .not('media_url', 'is', null)
+        .not('media_urls', 'is', null)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) {
-        console.error('Error fetching minis:', error);
+        console.error('❌ Error fetching minis:', error);
       } else {
+        console.log('✅ Fetched minis:', data?.length || 0, 'videos');
+        console.log('📝 Sample mini:', data?.[0]);
         setMinis((data || []) as Mini[]);
       }
       setLoading(false);
@@ -60,20 +66,24 @@ export default function Minis(): JSX.Element {
 
   // Auto-play current video
   useEffect(() => {
-    const currentVideo = videoRefs.current[currentIndex];
-    if (currentVideo) {
-      currentVideo.play().catch((error) => {
-        console.error('Error playing video:', error);
-      });
-    }
-
-    // Pause all other videos
-    videoRefs.current.forEach((video, index) => {
-      if (video && index !== currentIndex) {
-        video.pause();
+    if (minis.length > 0 && currentIndex >= 0) {
+      console.log('🎬 Switching to video index:', currentIndex);
+      
+      // Stop previous video
+      if (playingRef.current >= 0 && playingRef.current !== currentIndex) {
+        console.log('⏹️ Stopping video:', playingRef.current);
       }
-    });
-  }, [currentIndex]);
+      
+      // Start current video after a delay
+      const timer = setTimeout(() => {
+        playingRef.current = currentIndex;
+        setIsPlaying(true);
+        console.log('▶️ Auto-playing video:', currentIndex);
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, minis.length]);
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
@@ -148,29 +158,127 @@ export default function Minis(): JSX.Element {
             className='hide-scrollbar h-full snap-y snap-mandatory overflow-y-scroll'
             style={{ scrollBehavior: 'smooth' }}
           >
-          {minis.map((mini, index) => (
+          {minis.map((mini, index) => {
+            const videoUrl = mini.media_urls?.[0];
+            
+            // Build proper video URL
+            let fullVideoUrl = videoUrl;
+            
+            if (videoUrl?.startsWith('http')) {
+              // Already a full URL, just fix domain if needed
+              fullVideoUrl = videoUrl.replace(
+                'phdgiqhcirgddxwgxpxy.supabase.co',
+                'phdgiqhcidqnfuwxszco.supabase.co'
+              );
+            } else if (videoUrl) {
+              // Relative path - construct full URL with correct bucket
+              const { data } = supabase.storage
+                .from('post_videos')
+                .getPublicUrl(videoUrl);
+              fullVideoUrl = data.publicUrl;
+            }
+            
+            console.log(`📹 Video ${index}:`, {
+              original: videoUrl,
+              final: fullVideoUrl
+            });
+            
+            return (
             <div
               key={mini.id}
               className='relative flex w-full snap-start snap-always items-center justify-center bg-black'
               style={{ height: 'calc(100vh - 120px)' }}
             >
               {/* Video player */}
-              <video
-                ref={(el) => (videoRefs.current[index] = el)}
-                src={mini.media_url?.[0]}
-                loop
-                playsInline
-                muted={false}
-                className='h-full w-full object-contain'
-                onClick={(e) => {
-                  const video = e.currentTarget;
-                  if (video.paused) {
-                    video.play();
-                  } else {
-                    video.pause();
-                  }
-                }}
-              />
+              {fullVideoUrl ? (
+                <div 
+                  className='relative h-full w-full'
+                  onClick={() => {
+                    if (index === currentIndex) {
+                      const video = document.getElementById(`video-${index}`) as HTMLVideoElement;
+                      if (video) {
+                        if (video.paused) {
+                          video.play();
+                          setIsPlaying(true);
+                        } else {
+                          video.pause();
+                          setIsPlaying(false);
+                        }
+                      }
+                    }
+                  }}
+                >
+                  {/* Using native HTML5 video with proper attributes for Supabase */}
+                  <video
+                    id={`video-${index}`}
+                    src={fullVideoUrl}
+                    loop
+                    muted
+                    playsInline
+                    autoPlay={index === currentIndex}
+                    controls
+                    preload="metadata"
+                    crossOrigin="anonymous"
+                    className='h-full w-full object-cover'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      backgroundColor: '#000'
+                    }}
+                    onLoadedMetadata={() => {
+                      console.log('✅ Video loaded metadata:', index);
+                      const video = document.getElementById(`video-${index}`) as HTMLVideoElement;
+                      if (video && index === currentIndex) {
+                        video.play().catch(e => console.error('Play error:', e));
+                      }
+                    }}
+                    onError={async (e) => {
+                      console.error('❌ Video error:', index, fullVideoUrl);
+                      console.error('Error details:', e.currentTarget.error);
+                      console.log('Trying to load video with fetch...');
+                      
+                      // Try loading via fetch and blob URL
+                      try {
+                        const response = await fetch(fullVideoUrl, {
+                          method: 'GET',
+                          mode: 'cors',
+                          credentials: 'omit'
+                        });
+                        
+                        if (response.ok) {
+                          const blob = await response.blob();
+                          const blobUrl = URL.createObjectURL(blob);
+                          console.log('✅ Created blob URL:', blobUrl);
+                          
+                          const video = document.getElementById(`video-${index}`) as HTMLVideoElement;
+                          if (video) {
+                            video.src = blobUrl;
+                          }
+                        } else {
+                          console.error('Fetch failed:', response.status, response.statusText);
+                        }
+                      } catch (fetchError) {
+                        console.error('Blob fetch failed:', fetchError);
+                      }
+                    }}
+                    onPlay={() => console.log('▶️ Video playing:', index)}
+                    onLoadStart={() => console.log('🔄 Video loading:', index)}
+                  />
+                  {/* Play/Pause indicator */}
+                  {index === currentIndex && !isPlaying && (
+                    <div className='absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none'>
+                      <div className='rounded-full bg-white/90 p-4'>
+                        <HeroIcon className='h-12 w-12 text-black' iconName='PlayIcon' solid />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className='flex flex-col items-center justify-center text-white'>
+                  <p>No video URL</p>
+                </div>
+              )}
 
               {/* Overlay UI */}
               <div className='absolute inset-0 flex flex-col justify-end p-4'>
@@ -230,7 +338,8 @@ export default function Minis(): JSX.Element {
                 </div>
               </div>
             </div>
-          ))}
+          )}
+          )}
           </div>
 
           <style jsx>{`
