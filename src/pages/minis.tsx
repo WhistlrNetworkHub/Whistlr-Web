@@ -13,10 +13,13 @@ import { HeroIcon } from '@components/ui/hero-icon';
 import { UserAvatar } from '@components/user/user-avatar';
 import type { ReactElement, ReactNode } from 'react';
 
-// Get optimized settings based on device - iOS-style
-const optimizationStrategy = performanceOptimizer.getOptimizedInitStrategy();
-const BATCH_SIZE = optimizationStrategy.prefetchDistance; // Device-adaptive batch size
-const PRELOAD_COUNT = 6; // iOS preloads 5-6 videos ahead for instant playback
+// iOS-style pagination constants (exact match with iOS MinisViewModel)
+const BATCH_SIZE = 20; // iOS: 20 videos per batch
+const INITIAL_LOAD_SIZE = 20; // iOS: Quick initial load
+const PRELOAD_THRESHOLD = 5; // iOS: Trigger pagination when 5 videos remaining
+const BACKGROUND_PRELOAD_COUNT = 2; // iOS: Only preload next 2 videos in real-time
+const PREFETCH_BATCHES = 3; // iOS: Cache 3 batches ahead (60 videos total)
+const MAX_CACHED_VIDEOS = 60; // iOS: Keep max 60 videos (3x batch size)
 
 interface Mini {
   id: string;
@@ -47,18 +50,20 @@ export default function Minis(): JSX.Element {
   const [loadingMore, setLoadingMore] = useState(false);
   const [lastVideoId, setLastVideoId] = useState<string | null>(null);
   const [videoProgress, setVideoProgress] = useState<{ [key: number]: number }>({});
+  const [prefetchedBatches, setPrefetchedBatches] = useState<{ [key: string]: Mini[] }>({});
+  const [activePrefetchTasks, setActivePrefetchTasks] = useState<Set<string>>(new Set());
   
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const playingRef = useRef<number>(-1);
 
-  // Fetch initial batch of videos
+  // iOS-style: Fetch videos from database with cursor-based pagination
   const fetchMinis = useCallback(async (isInitial = false) => {
     if (loadingMore && !isInitial) return;
     
     setLoadingMore(true);
-    console.log('🎥 Fetching minis...');
+    console.log(`🎥 [iOS-STYLE] Fetching ${isInitial ? 'initial' : 'next'} batch of ${BATCH_SIZE} videos...`);
     
     let query = supabase
       .from('posts')
@@ -68,7 +73,7 @@ export default function Minis(): JSX.Element {
       .order('created_at', { ascending: false })
       .limit(BATCH_SIZE);
     
-    // Pagination: fetch videos after last loaded video
+    // iOS-style: Cursor-based pagination for efficient scrolling
     if (lastVideoId && !isInitial) {
       const { data: lastVideo } = await supabase
         .from('posts')
@@ -84,12 +89,21 @@ export default function Minis(): JSX.Element {
     const { data, error } = await query;
 
     if (error) {
-      console.error('❌ Error fetching minis:', error);
+      console.error('❌ [iOS-STYLE] Error fetching minis:', error);
     } else {
-      console.log('✅ Fetched minis:', data?.length || 0, 'videos');
+      console.log(`✅ [iOS-STYLE] Fetched ${data?.length || 0} videos`);
       
       if (data && data.length > 0) {
-        setMinis(prev => isInitial ? data : [...prev, ...data]);
+        setMinis(prev => {
+          const newVideos = isInitial ? data : [...prev, ...data];
+          // iOS-style: Memory management - keep max 60 videos
+          if (newVideos.length > MAX_CACHED_VIDEOS) {
+            const excessCount = newVideos.length - MAX_CACHED_VIDEOS;
+            console.log(`🧹 [iOS-STYLE] Memory cleanup: removing ${excessCount} old videos`);
+            return newVideos.slice(excessCount);
+          }
+          return newVideos;
+        });
         setLastVideoId(data[data.length - 1].id);
         setHasMore(data.length === BATCH_SIZE);
       } else {
@@ -116,7 +130,7 @@ export default function Minis(): JSX.Element {
     };
   }, []);
 
-  // iOS-style: Aggressive preloading of 5-6 videos ahead
+  // iOS-style: Background preload only 2 videos ahead (real-time)
   const preloadVideo = useCallback((index: number) => {
     const video = videoRefs.current[index];
     if (video && video.readyState < 2) {
@@ -125,21 +139,65 @@ export default function Minis(): JSX.Element {
     }
   }, []);
 
-  // iOS-style: Preload multiple videos ahead for instant playback
-  const preloadMultipleVideos = useCallback((startIndex: number) => {
-    for (let i = 1; i <= PRELOAD_COUNT; i++) {
-      if (startIndex + i < minis.length) {
-        preloadVideo(startIndex + i);
+  // iOS-style: Preload next videos (exact iOS behavior: 2 ahead + 3 behind)
+  const preloadNextVideos = useCallback((currentIndex: number) => {
+    // iOS: Only preload next 2 videos in real-time (backgroundPreloadCount = 2)
+    const endIndex = Math.min(currentIndex + BACKGROUND_PRELOAD_COUNT, minis.length - 1);
+    
+    for (let i = currentIndex + 1; i <= endIndex; i++) {
+      if (i < minis.length) {
+        preloadVideo(i);
       }
     }
-    // Also preload 2-3 videos behind for reverse scrolling
-    for (let i = 1; i <= 3; i++) {
-      if (startIndex - i >= 0) {
-        preloadVideo(startIndex - i);
-      }
+    
+    // iOS: Also preload 3 videos behind for reverse scrolling
+    const startIndex = Math.max(0, currentIndex - 3);
+    for (let i = startIndex; i < currentIndex; i++) {
+      preloadVideo(i);
     }
-    console.log(`🚀 [iOS-STYLE] Preloaded ${PRELOAD_COUNT} videos ahead from index ${startIndex}`);
+    
+    console.log(`🚀 [iOS-STYLE] Preloaded videos ${startIndex} to ${endIndex} (2 ahead + 3 behind)`);
   }, [minis.length, preloadVideo]);
+
+  // iOS-style: Heavy prefetching system - prefetch 3 batches ahead in background
+  const startHeavyPrefetching = useCallback(async () => {
+    console.log(`🚀 [iOS-STYLE] Starting heavy prefetch: ${PREFETCH_BATCHES} batches ahead`);
+    
+    for (let batchOffset = 1; batchOffset <= PREFETCH_BATCHES; batchOffset++) {
+      const prefetchKey = `batch_${batchOffset}`;
+      
+      // Skip if already prefetching or cached
+      if (activePrefetchTasks.has(prefetchKey) || prefetchedBatches[prefetchKey]) {
+        continue;
+      }
+      
+      setActivePrefetchTasks(prev => new Set(prev).add(prefetchKey));
+      
+      try {
+        // Fetch next batch in background
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*, user:author_id(*)')
+          .eq('media_type', 'video')
+          .not('media_urls', 'is', null)
+          .order('created_at', { ascending: false })
+          .range(minis.length + (batchOffset - 1) * BATCH_SIZE, minis.length + batchOffset * BATCH_SIZE - 1);
+        
+        if (!error && data && data.length > 0) {
+          setPrefetchedBatches(prev => ({ ...prev, [prefetchKey]: data }));
+          console.log(`✅ [iOS-STYLE] Heavy prefetch: cached batch ${batchOffset} (${data.length} videos)`);
+        }
+      } catch (error) {
+        console.error(`❌ [iOS-STYLE] Heavy prefetch failed for batch ${batchOffset}:`, error);
+      } finally {
+        setActivePrefetchTasks(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(prefetchKey);
+          return newSet;
+        });
+      }
+    }
+  }, [minis.length, activePrefetchTasks, prefetchedBatches]);
 
   // Intersection Observer for precise scroll detection
   useEffect(() => {
@@ -156,16 +214,19 @@ export default function Minis(): JSX.Element {
           const index = parseInt(videoElement.dataset.index || '0');
           
           if (index !== currentIndex) {
-            console.log(`👁️ [iOS-STYLE] Video ${index} is now visible`);
+            console.log(`👁️ [iOS-STYLE] Video ${index} is now visible (${index + 1}/${minis.length})`);
             setCurrentIndex(index);
             
-            // iOS-style: Aggressive preloading
-            preloadMultipleVideos(index);
+            // iOS-style: Background preload only 2 videos ahead
+            preloadNextVideos(index);
             
-            // Load more when near end (iOS loads 3 batches ahead)
-            if (hasMore && !loadingMore && index >= minis.length - 5) {
-              console.log('📊 [iOS-STYLE] Near end, loading more videos...');
+            // iOS-style: Early pagination trigger (when 5 videos remaining)
+            const remainingVideos = minis.length - index;
+            if (remainingVideos <= PRELOAD_THRESHOLD && hasMore && !loadingMore) {
+              console.log(`🚀 [iOS-STYLE] ULTRA-FAST pagination trigger: ${remainingVideos} videos remaining (loading ${BATCH_SIZE} more)`);
               fetchMinis();
+              // iOS: Start heavy prefetching in background
+              startHeavyPrefetching();
             }
           }
         }
@@ -177,7 +238,7 @@ export default function Minis(): JSX.Element {
         observerRef.current.disconnect();
       }
     };
-  }, [currentIndex, minis.length, hasMore, loadingMore, fetchMinis, preloadMultipleVideos]);
+  }, [currentIndex, minis.length, hasMore, loadingMore, fetchMinis, preloadNextVideos, startHeavyPrefetching]);
 
   // Auto-play current video with smooth transition
   useEffect(() => {
@@ -391,7 +452,7 @@ export default function Minis(): JSX.Element {
                     loop
                     muted={isMuted}
                     playsInline
-                    preload={index <= currentIndex + PRELOAD_COUNT ? "auto" : "metadata"}
+                    preload={index <= currentIndex + BACKGROUND_PRELOAD_COUNT ? "auto" : "metadata"}
                     crossOrigin="anonymous"
                     autoPlay={index === 0}
                     className='h-full w-full object-cover'
