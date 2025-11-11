@@ -47,18 +47,22 @@ export function FollowersModal({
       
       try {
         if (type === 'followers') {
-          // Get users who follow this profile (EXACT SAME PATTERN AS FOLLOWING)
+          // Get users who follow this profile - LIMIT to 100 to prevent .in() overflow
           const { data: followData, error } = await supabase
             .from('follows')
             .select('follower_id')
-            .eq('following_id', profileId);
+            .eq('following_id', profileId)
+            .limit(100);
 
-          console.log('FOLLOWERS Query Result:', followData);
+          console.log('FOLLOWERS Query Result length:', followData?.length);
           console.log('FOLLOWERS Query Error:', error);
 
           if (followData && followData.length > 0) {
-            const followerIds = followData.map((f) => f.follower_id);
-            console.log('FOLLOWERS: Fetching profiles for IDs:', followerIds);
+            const followerIds = followData
+              .map((f) => f.follower_id)
+              .filter((id) => id); // Remove nulls
+            
+            console.log('FOLLOWERS: Fetching profiles for', followerIds.length, 'IDs');
             
             const { data: usersData, error: profileError } = await supabase
               .from('profiles')
@@ -66,7 +70,7 @@ export function FollowersModal({
               .in('id', followerIds);
 
             console.log('FOLLOWERS: Profile error:', profileError);
-            console.log('FOLLOWERS: Fetched users:', usersData?.map(u => u.username));
+            console.log('FOLLOWERS: Fetched users:', usersData?.length);
             
             if (usersData) {
               setUsers(usersData as User[]);
@@ -75,26 +79,30 @@ export function FollowersModal({
             setUsers([]);
           }
         } else {
-          // Get users this profile follows
+          // Get users this profile follows - LIMIT to 100
           console.log('📤 FOLLOWING: Query SELECT following_id FROM follows WHERE follower_id =', profileId);
           const { data: followData, error } = await supabase
             .from('follows')
             .select('following_id')
-            .eq('follower_id', profileId);
+            .eq('follower_id', profileId)
+            .limit(100);
 
-          console.log('FOLLOWING Query Result:', followData);
+          console.log('FOLLOWING Query Result length:', followData?.length);
           console.log('FOLLOWING Query Error:', error);
 
           if (followData && followData.length > 0) {
-            const followingIds = followData.map((f) => f.following_id);
-            console.log('FOLLOWING: Fetching profiles for IDs:', followingIds);
+            const followingIds = followData
+              .map((f) => f.following_id)
+              .filter((id) => id); // Remove nulls
+            
+            console.log('FOLLOWING: Fetching profiles for', followingIds.length, 'IDs');
             
             const { data: usersData } = await supabase
               .from('profiles')
               .select('*')
               .in('id', followingIds);
 
-            console.log('FOLLOWING: Fetched users:', usersData?.map(u => u.username));
+            console.log('FOLLOWING: Fetched users:', usersData?.length);
             
             if (usersData) {
               setUsers(usersData as User[]);
