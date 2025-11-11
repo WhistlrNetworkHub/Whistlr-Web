@@ -130,12 +130,12 @@ export function InputForm({
         {isVisibilityShown && (
           <motion.button
             type='button'
-            className='custom-button accent-tab flex cursor-not-allowed items-center gap-1
-                       self-start rounded-full glass-morphism-strong px-4 py-2 text-white shadow-lg
-                       hover:bg-main-accent/10 active:bg-main-accent/20'
+            className='custom-button flex cursor-not-allowed items-center gap-2
+                       self-start rounded-full glass-morphism-strong px-5 py-2.5 text-white shadow-xl
+                       border border-white/20 hover:bg-main-accent/10 active:bg-main-accent/20'
             {...fromTop}
           >
-            <p className='font-bold text-sm'>Everyone</p>
+            <p className='font-semibold text-sm'>Everyone</p>
             <HeroIcon className='h-4 w-4' iconName='ChevronDownIcon' />
           </motion.button>
         )}
