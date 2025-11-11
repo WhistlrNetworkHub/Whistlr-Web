@@ -1,10 +1,9 @@
 import { useRouter } from 'next/router';
-
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useDocument } from '@lib/hooks/useDocument';
 import { useUser } from '@lib/context/user-context';
 import { isPlural } from '@lib/utils';
-import { userStatsCollection } from '@lib/supabase/collections';
+import { supabase } from '@lib/supabase/client';
 import { UserName } from './user-name';
 import type { Variants } from 'framer-motion';
 
@@ -21,24 +20,50 @@ export function UserHeader(): JSX.Element {
   } = useRouter();
 
   const { user, loading } = useUser();
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [totalTweets, setTotalTweets] = useState(0);
+  const [totalPhotos, setTotalPhotos] = useState(0);
+  const [totalLikes, setTotalLikes] = useState(0);
 
   const userId = user ? user.id : null;
 
-  const { data: statsData, loading: statsLoading } = useDocument(
-    doc(userStatsCollection(userId ?? 'null'), 'stats'),
-    {
-      allowNull: true,
-      disabled: !userId
-    }
-  );
+  useEffect(() => {
+    if (!userId) return;
 
-  const { tweets, likes } = statsData ?? {};
+    const loadStats = async () => {
+      setStatsLoading(true);
+      try {
+        // Get total posts count
+        const { count: postsCount } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('author_id', userId);
 
-  const [totalTweets, totalPhotos, totalLikes] = [
-    (user?.totalTweets ?? 0) + (tweets?.length ?? 0),
-    user?.totalPhotos,
-    likes?.length
-  ];
+        // Get posts with media (photos/videos)
+        const { count: mediaCount } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('author_id', userId)
+          .not('media_urls', 'is', null);
+
+        // Get total likes count
+        const { count: likesCount } = await supabase
+          .from('post_likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        setTotalTweets(postsCount || 0);
+        setTotalPhotos(mediaCount || 0);
+        setTotalLikes(likesCount || 0);
+      } catch (error) {
+        console.error('Error loading user stats:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    loadStats();
+  }, [userId]);
 
   const currentPage = pathname.split('/').pop() ?? '';
 
