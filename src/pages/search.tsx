@@ -146,12 +146,25 @@ export default function Search(): JSX.Element {
 
   const getFullImageURL = (url: string | null): string => {
     if (!url) return '';
+    
+    // If it's already a full URL
     if (url.startsWith('http')) {
       // Fix the domain if needed
-      return url.replace('phdgiqhcirgddxwgxpxy', 'phdgiqhcidqnfuwxszco');
+      const correctedUrl = url.replace('phdgiqhcirgddxwgxpxy', 'phdgiqhcidqnfuwxszco');
+      console.log('Full URL (corrected):', correctedUrl);
+      return correctedUrl;
     }
+    
+    // Determine the bucket based on the URL pattern
+    let bucket = 'post-media';
+    if (url.includes('downloaded_videos') || url.includes('.mp4') || url.includes('.mov')) {
+      bucket = 'post_videos';
+    }
+    
     // Construct the full URL
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/post-media/${url}`;
+    const fullUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${url}`;
+    console.log('Constructed URL:', fullUrl);
+    return fullUrl;
   };
 
   return (
@@ -466,67 +479,105 @@ export default function Search(): JSX.Element {
               </div>
             ) : (
               /* Grid layout for Mini's and Imprints */
-              <div className='grid grid-cols-2 gap-3'>
-                {results.map((post, index) => (
-                  <Link key={post.id} href={`/tweet/${post.id}`}>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                      whileHover={{ scale: 1.03, y: -4 }}
-                      className='relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-200'
-                    >
-                      {/* Media */}
-                      {post.media_urls && post.media_urls[0] ? (
-                        selectedCategory === "Mini's" ? (
-                          <video
-                            src={getFullImageURL(post.media_urls[0])}
-                            className='w-full h-full object-cover'
-                            muted
-                            playsInline
-                          />
+              <div className={`grid gap-3 ${selectedCategory === "Mini's" ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                {results.map((post, index) => {
+                  // Debug logging
+                  console.log(`Post ${index}:`, {
+                    id: post.id,
+                    media_urls: post.media_urls,
+                    media_type: post.media_type,
+                    content: post.content?.substring(0, 50)
+                  });
+
+                  const videoUrl = post.media_urls && post.media_urls[0] ? getFullImageURL(post.media_urls[0]) : null;
+                  console.log(`Video URL for post ${index}:`, videoUrl);
+
+                  return (
+                    <Link key={post.id} href={`/tweet/${post.id}`}>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.05, duration: 0.3 }}
+                        whileHover={{ scale: 1.03, y: -4 }}
+                        className={`relative rounded-xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-200 ${
+                          selectedCategory === "Mini's" ? 'aspect-[9/16]' : 'aspect-square'
+                        }`}
+                      >
+                        {/* Media */}
+                        {post.media_urls && post.media_urls[0] ? (
+                          selectedCategory === "Mini's" ? (
+                            <video
+                              key={videoUrl}
+                              src={videoUrl || ''}
+                              className='w-full h-full object-cover'
+                              poster={videoUrl || ''}
+                              muted
+                              playsInline
+                              preload='metadata'
+                              onError={(e) => {
+                                const target = e.target as HTMLVideoElement;
+                                console.error('Video error:', {
+                                  src: target.src,
+                                  error: target.error?.message,
+                                  code: target.error?.code,
+                                  networkState: target.networkState,
+                                  readyState: target.readyState
+                                });
+                              }}
+                              onLoadedMetadata={(e) => {
+                                console.log('Video loaded:', (e.target as HTMLVideoElement).src);
+                              }}
+                            />
+                          ) : (
+                            <img
+                              src={getFullImageURL(post.media_urls[0])}
+                              alt='Post media'
+                              className='w-full h-full object-cover'
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                console.error('Image error:', target.src);
+                                target.src = '/default-avatar.png';
+                              }}
+                            />
+                          )
                         ) : (
-                          <img
-                            src={getFullImageURL(post.media_urls[0])}
-                            alt='Post media'
-                            className='w-full h-full object-cover'
-                          />
-                        )
-                      ) : (
-                        <div className='w-full h-full bg-gradient-to-br from-blue-500 to-cyan-500' />
-                      )}
-
-                      {/* Border Glow */}
-                      <div className='absolute inset-0 rounded-xl border border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]' />
-
-                      {/* Likes Badge */}
-                      <div className='absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full glass-morphism-strong border border-white/20 backdrop-blur-xl shadow-lg'>
-                        <div className='w-2.5 h-2.5 text-blue-400'>♪</div>
-                        <span className='text-[11px] font-bold text-white'>
-                          {formatCount(post.likes_count)}
-                        </span>
-                      </div>
-
-                      {/* Content Overlay */}
-                      {post.content && (
-                        <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3'>
-                          <p className='text-xs font-semibold text-white line-clamp-2 drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
-                            {post.content}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Play Icon for Videos */}
-                      {selectedCategory === "Mini's" && (
-                        <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-                          <div className='w-12 h-12 rounded-full glass-morphism-strong border border-white/30 flex items-center justify-center shadow-2xl'>
-                            <HeroIcon iconName='PlayIcon' className='h-6 w-6 text-white ml-1' />
+                          <div className='w-full h-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center'>
+                            <p className='text-white/60 text-sm'>No media</p>
                           </div>
+                        )}
+
+                        {/* Border Glow */}
+                        <div className='absolute inset-0 rounded-xl border border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]' />
+
+                        {/* Likes Badge */}
+                        <div className='absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full glass-morphism-strong border border-white/20 backdrop-blur-xl shadow-lg'>
+                          <div className='w-2.5 h-2.5 text-blue-400'>♪</div>
+                          <span className='text-[11px] font-bold text-white'>
+                            {formatCount(post.likes_count)}
+                          </span>
                         </div>
-                      )}
-                    </motion.div>
-                  </Link>
-                ))}
+
+                        {/* Content Overlay */}
+                        {post.content && (
+                          <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3'>
+                            <p className='text-xs font-semibold text-white line-clamp-2 drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
+                              {post.content}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Play Icon for Videos */}
+                        {selectedCategory === "Mini's" && post.media_urls && post.media_urls[0] && (
+                          <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+                            <div className='w-14 h-14 rounded-full glass-morphism-strong border border-white/30 flex items-center justify-center shadow-2xl'>
+                              <HeroIcon iconName='PlayIcon' className='h-7 w-7 text-white ml-1' />
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </>
