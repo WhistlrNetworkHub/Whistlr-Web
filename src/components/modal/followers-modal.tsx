@@ -32,22 +32,27 @@ export function FollowersModal({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!open || !profileId) return;
+    if (!open || !profileId) {
+      console.log('⚠️ Modal not open or no profileId', { open, profileId });
+      return;
+    }
 
     const loadUsers = async () => {
       setLoading(true);
       console.log(`🔍 Loading ${type} for profile:`, profileId);
+      console.log(`📊 Type check - looking for people who ${type === 'followers' ? 'follow this user' : 'this user follows'}`);
       
       try {
         if (type === 'followers') {
           // Get users who follow this profile
-          console.log('📥 Fetching followers (people who follow this profile)');
+          console.log('📥 Query: SELECT follower_id FROM follows WHERE following_id =', profileId);
           const { data: followData, error: followError } = await supabase
             .from('follows')
             .select('follower_id')
             .eq('following_id', profileId);
 
-          console.log('Followers data:', followData, 'Error:', followError);
+          console.log(`✅ Raw follows data (${followData?.length || 0} rows):`, followData);
+          console.log('❌ Error:', followError);
 
           if (followData && followData.length > 0) {
             const followerIds = followData.map((f) => f.follower_id);
