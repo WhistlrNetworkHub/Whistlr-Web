@@ -32,7 +32,7 @@ export function MainHeader({
   return (
     <header
       className={cn(
-        'hover-animation even z-10 glass-morphism-light px-4 py-2',
+        'relative z-10 px-4 py-6',
         !disableSticky && 'sticky top-0',
         className ?? 'flex items-center gap-6'
       )}
@@ -51,11 +51,11 @@ export function MainHeader({
         </Button>
       )}
       {title && (
-        <div className='flex gap-8'>
+        <div className='absolute left-6 top-6 z-50 pointer-events-none'>
           {useMobileSidebar && <MobileSidebar />}
-          <h2 className='text-xl font-bold' key={title}>
+          <h1 className='text-white text-3xl font-semibold tracking-tight uppercase' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }} key={title}>
             {title}
-          </h2>
+          </h1>
         </div>
       )}
       {children}
