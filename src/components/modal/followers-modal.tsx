@@ -54,20 +54,28 @@ export function FollowersModal({
 
           if (followData && followData.length > 0) {
             const followerIds = followData.map((f) => f.follower_id);
-            console.log('FOLLOWERS: Fetching profiles for IDs:', followerIds);
+            console.log('FOLLOWERS: Raw follow data:', followData);
+            console.log('FOLLOWERS: Extracted follower IDs:', followerIds);
+            console.log('FOLLOWERS: ID types:', followerIds.map(id => typeof id));
+            console.log('FOLLOWERS: ID values:', followerIds.map(id => `"${id}"`));
             
-            const { data: usersData } = await supabase
+            const { data: usersData, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .in('id', followerIds);
 
+            console.log('FOLLOWERS: Profile query error:', profileError);
+            console.log('FOLLOWERS: Fetched users data:', usersData);
             console.log('FOLLOWERS: Fetched users:', usersData?.map(u => u.username));
             
-            if (usersData) {
+            if (usersData && usersData.length > 0) {
               setUsers(usersData as User[]);
+            } else {
+              console.warn('FOLLOWERS: No users found for follower IDs');
+              setUsers([]);
             }
           } else {
-            console.log('FOLLOWERS: No data found');
+            console.log('FOLLOWERS: No follow relationships found');
             setUsers([]);
           }
         } else {
