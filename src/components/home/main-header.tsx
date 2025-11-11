@@ -32,7 +32,7 @@ export function MainHeader({
   return (
     <header
       className={cn(
-        'hover-animation even z-10 bg-main-background/60 px-4 py-2 backdrop-blur-md',
+        'hover-animation even z-10 glass-morphism-light px-4 py-2',
         !disableSticky && 'sticky top-0',
         className ?? 'flex items-center gap-6'
       )}

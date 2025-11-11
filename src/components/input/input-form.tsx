@@ -113,7 +113,7 @@ export function InputForm({
   return (
     <div className='flex min-h-[48px] w-full flex-col justify-center gap-4'>
       <Modal
-        modalClassName='max-w-xs bg-main-background w-full p-8 rounded-2xl'
+        modalClassName='max-w-xs glass-morphism-strong w-full p-8 rounded-2xl'
         open={open}
         closeModal={closeModal}
       >

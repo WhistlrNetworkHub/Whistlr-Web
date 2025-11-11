@@ -99,7 +99,7 @@ export function Sidebar(): JSX.Element {
     >
       <Modal
         className='flex items-start justify-center'
-        modalClassName='bg-main-background rounded-2xl max-w-xl w-full mt-8 overflow-hidden'
+        modalClassName='glass-morphism-strong rounded-2xl max-w-xl w-full mt-8 overflow-hidden'
         open={open}
         closeModal={closeModal}
       >

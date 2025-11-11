@@ -26,7 +26,7 @@ export function MoreSettings(): JSX.Element {
   return (
     <>
       <Modal
-        modalClassName='max-w-xl bg-main-background w-full p-8 rounded-2xl hover-animation'
+        modalClassName='max-w-xl glass-morphism-strong w-full p-8 rounded-2xl hover-animation'
         open={open}
         closeModal={closeModal}
       >

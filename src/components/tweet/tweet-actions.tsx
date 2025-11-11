@@ -203,7 +203,7 @@ export function TweetActions({
   return (
     <>
       <Modal
-        modalClassName='max-w-xs bg-main-background w-full p-8 rounded-2xl'
+        modalClassName='max-w-xs glass-morphism-strong w-full p-8 rounded-2xl'
         open={open}
         closeModal={closeDeleteModal}
       >

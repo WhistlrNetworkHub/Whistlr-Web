@@ -35,7 +35,7 @@ export function FollowButton({
   return (
     <>
       <Modal
-        modalClassName='flex flex-col gap-6 max-w-xs bg-main-background w-full p-8 rounded-2xl'
+        modalClassName='flex flex-col gap-6 max-w-xs glass-morphism-strong w-full p-8 rounded-2xl'
         open={open}
         closeModal={closeModal}
       >

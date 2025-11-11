@@ -230,7 +230,7 @@ export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
   return (
     <form className={cn(hide && 'hidden md:block')}>
       <Modal
-        modalClassName='relative bg-main-background rounded-2xl max-w-xl w-full h-[672px] overflow-hidden'
+        modalClassName='relative glass-morphism-strong rounded-2xl max-w-xl w-full h-[672px] overflow-hidden'
         open={open}
         closeModal={closeModal}
       >

@@ -88,7 +88,7 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
     >
       <Modal
         className='flex items-start justify-center'
-        modalClassName='bg-main-background rounded-2xl max-w-xl w-full my-8 overflow-hidden'
+        modalClassName='glass-morphism-strong rounded-2xl max-w-xl w-full my-8 overflow-hidden'
         open={open}
         closeModal={closeModal}
       >

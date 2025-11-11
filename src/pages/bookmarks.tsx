@@ -94,7 +94,7 @@ export default function Bookmarks(): JSX.Element {
     <MainContainer>
       <SEO title='Bookmarks / Whistlr' />
       <Modal
-        modalClassName='max-w-xs bg-main-background w-full p-8 rounded-2xl'
+        modalClassName='max-w-xs glass-morphism-strong w-full p-8 rounded-2xl'
         open={open}
         closeModal={closeModal}
       >
