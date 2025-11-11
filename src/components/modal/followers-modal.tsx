@@ -42,41 +42,31 @@ export function FollowersModal({
       
       try {
         if (type === 'followers') {
-          // Get users who follow this profile
-          console.log('📥 FOLLOWERS: Query SELECT follower_id FROM follows WHERE following_id =', profileId);
+          // Get users who follow this profile (EXACT SAME PATTERN AS FOLLOWING)
           const { data: followData, error } = await supabase
             .from('follows')
-            .select('*')
+            .select('follower_id')
             .eq('following_id', profileId);
 
           console.log('FOLLOWERS Query Result:', followData);
           console.log('FOLLOWERS Query Error:', error);
-          console.log('FOLLOWERS First row sample:', followData?.[0]);
 
           if (followData && followData.length > 0) {
-            const followerIds = followData.map((f) => f.follower_id).filter(id => id);
-            console.log('FOLLOWERS: Raw follow data:', followData);
-            console.log('FOLLOWERS: Extracted follower IDs:', followerIds);
-            console.log('FOLLOWERS: ID types:', followerIds.map(id => typeof id));
-            console.log('FOLLOWERS: ID values:', followerIds.map(id => `"${id}"`));
+            const followerIds = followData.map((f) => f.follower_id);
+            console.log('FOLLOWERS: Fetching profiles for IDs:', followerIds);
             
             const { data: usersData, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .in('id', followerIds);
 
-            console.log('FOLLOWERS: Profile query error:', profileError);
-            console.log('FOLLOWERS: Fetched users data:', usersData);
+            console.log('FOLLOWERS: Profile error:', profileError);
             console.log('FOLLOWERS: Fetched users:', usersData?.map(u => u.username));
             
-            if (usersData && usersData.length > 0) {
+            if (usersData) {
               setUsers(usersData as User[]);
-            } else {
-              console.warn('FOLLOWERS: No users found for follower IDs');
-              setUsers([]);
             }
           } else {
-            console.log('FOLLOWERS: No follow relationships found');
             setUsers([]);
           }
         } else {
