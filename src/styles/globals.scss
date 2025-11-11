@@ -39,7 +39,9 @@
   }
 
   body {
-    @apply hover-animation bg-main-background font-twitter-chirp text-light-primary dark:text-dark-primary;
+    @apply hover-animation font-twitter-chirp text-light-primary dark:text-dark-primary;
+    /* Dark gradient background */
+    background: linear-gradient(135deg, rgb(0, 0, 0) 0%, rgb(15, 20, 25) 50%, rgb(0, 0, 0) 100%);
   }
 }
 
