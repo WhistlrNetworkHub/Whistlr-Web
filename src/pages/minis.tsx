@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@lib/context/auth-context';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
@@ -10,6 +10,9 @@ import { Loading } from '@components/ui/loading';
 import { HeroIcon } from '@components/ui/hero-icon';
 import { UserAvatar } from '@components/user/user-avatar';
 import type { ReactElement, ReactNode } from 'react';
+
+const BATCH_SIZE = 10; // Load videos in batches
+const PRELOAD_COUNT = 2; // Preload 2 videos ahead
 
 interface Mini {
   id: string;
@@ -35,68 +38,148 @@ export default function Minis(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastVideoId, setLastVideoId] = useState<string | null>(null);
+  
   const containerRef = useRef<HTMLDivElement>(null);
-  const playerRefs = useRef<any[]>([]);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const playingRef = useRef<number>(-1);
 
-  useEffect(() => {
-    const fetchMinis = async () => {
-      console.log('🎥 Fetching minis...');
-      
-      const { data, error } = await supabase
+  // Fetch initial batch of videos
+  const fetchMinis = useCallback(async (isInitial = false) => {
+    if (loadingMore && !isInitial) return;
+    
+    setLoadingMore(true);
+    console.log('🎥 Fetching minis...');
+    
+    let query = supabase
+      .from('posts')
+      .select('*, user:author_id(*)')
+      .eq('media_type', 'video')
+      .not('media_urls', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(BATCH_SIZE);
+    
+    // Pagination: fetch videos after last loaded video
+    if (lastVideoId && !isInitial) {
+      const { data: lastVideo } = await supabase
         .from('posts')
-        .select('*, user:author_id(*)')
-        .eq('media_type', 'video')
-        .not('media_urls', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error('❌ Error fetching minis:', error);
-      } else {
-        console.log('✅ Fetched minis:', data?.length || 0, 'videos');
-        console.log('📝 Sample mini:', data?.[0]);
-        setMinis((data || []) as Mini[]);
+        .select('created_at')
+        .eq('id', lastVideoId)
+        .single();
+      
+      if (lastVideo) {
+        query = query.lt('created_at', lastVideo.created_at);
       }
-      setLoading(false);
-    };
+    }
 
-    fetchMinis();
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('❌ Error fetching minis:', error);
+    } else {
+      console.log('✅ Fetched minis:', data?.length || 0, 'videos');
+      
+      if (data && data.length > 0) {
+        setMinis(prev => isInitial ? data : [...prev, ...data]);
+        setLastVideoId(data[data.length - 1].id);
+        setHasMore(data.length === BATCH_SIZE);
+      } else {
+        setHasMore(false);
+      }
+    }
+    
+    setLoading(false);
+    setLoadingMore(false);
+  }, [lastVideoId, loadingMore]);
+
+  // Initial load
+  useEffect(() => {
+    fetchMinis(true);
   }, []);
 
-  // Auto-play current video
+  // Preload adjacent videos
+  const preloadVideo = useCallback((index: number) => {
+    const video = videoRefs.current[index];
+    if (video && video.readyState < 2) {
+      video.load();
+      console.log(`📥 Preloading video ${index}`);
+    }
+  }, []);
+
+  // Intersection Observer for precise scroll detection
+  useEffect(() => {
+    const options = {
+      root: containerRef.current,
+      rootMargin: '0px',
+      threshold: 0.75 // Video must be 75% visible to be considered "current"
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.75) {
+          const videoElement = entry.target as HTMLElement;
+          const index = parseInt(videoElement.dataset.index || '0');
+          
+          if (index !== currentIndex) {
+            console.log(`👁️ Video ${index} is now visible`);
+            setCurrentIndex(index);
+            
+            // Preload next videos
+            for (let i = 1; i <= PRELOAD_COUNT; i++) {
+              if (index + i < minis.length) {
+                preloadVideo(index + i);
+              }
+            }
+            
+            // Load more when near end
+            if (hasMore && !loadingMore && index >= minis.length - 3) {
+              console.log('📊 Near end, loading more videos...');
+              fetchMinis();
+            }
+          }
+        }
+      });
+    }, options);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [currentIndex, minis.length, hasMore, loadingMore, fetchMinis, preloadVideo]);
+
+  // Auto-play current video with smooth transition
   useEffect(() => {
     if (minis.length > 0 && currentIndex >= 0) {
-      console.log('🎬 Switching to video index:', currentIndex);
+      // Pause all videos first
+      videoRefs.current.forEach((video, idx) => {
+        if (video && idx !== currentIndex) {
+          video.pause();
+        }
+      });
       
-      // Stop previous video
-      if (playingRef.current >= 0 && playingRef.current !== currentIndex) {
-        console.log('⏹️ Stopping video:', playingRef.current);
-      }
-      
-      // Start current video after a delay
+      // Play current video after small delay
       const timer = setTimeout(() => {
-        playingRef.current = currentIndex;
-        setIsPlaying(true);
-        console.log('▶️ Auto-playing video:', currentIndex);
-      }, 200);
+        const currentVideo = videoRefs.current[currentIndex];
+        if (currentVideo) {
+          currentVideo.play()
+            .then(() => {
+              setIsPlaying(true);
+              playingRef.current = currentIndex;
+              console.log('▶️ Auto-playing video:', currentIndex);
+            })
+            .catch(e => console.error('Play error:', e));
+        }
+      }, 150);
 
       return () => clearTimeout(timer);
     }
   }, [currentIndex, minis.length]);
 
-  const handleScroll = useCallback(() => {
-    if (!containerRef.current) return;
-
-    const container = containerRef.current;
-    const scrollPosition = container.scrollTop;
-    const videoHeight = window.innerHeight;
-    const newIndex = Math.round(scrollPosition / videoHeight);
-
-    if (newIndex !== currentIndex && newIndex >= 0 && newIndex < minis.length) {
-      setCurrentIndex(newIndex);
-    }
-  }, [currentIndex, minis.length]);
+  // Removed old scroll handler - using Intersection Observer instead
 
   const handleLike = async (miniId: string) => {
     if (!user) return;
@@ -154,7 +237,6 @@ export default function Minis(): JSX.Element {
           {/* TikTok-style vertical scroll container */}
           <div
             ref={containerRef}
-            onScroll={handleScroll}
             className='hide-scrollbar h-full snap-y snap-mandatory overflow-y-scroll'
             style={{ scrollBehavior: 'smooth' }}
           >
@@ -186,6 +268,12 @@ export default function Minis(): JSX.Element {
             return (
             <div
               key={mini.id}
+              data-index={index}
+              ref={(el) => {
+                if (el && observerRef.current) {
+                  observerRef.current.observe(el);
+                }
+              }}
               className='relative flex w-full snap-start snap-always items-center justify-center bg-black'
               style={{ height: 'calc(100vh - 120px)' }}
             >
@@ -210,14 +298,13 @@ export default function Minis(): JSX.Element {
                 >
                   {/* Using native HTML5 video with proper attributes for Supabase */}
                   <video
+                    ref={(el) => (videoRefs.current[index] = el)}
                     id={`video-${index}`}
                     src={fullVideoUrl}
                     loop
                     muted
                     playsInline
-                    autoPlay={index === currentIndex}
-                    controls
-                    preload="metadata"
+                    preload={index <= currentIndex + PRELOAD_COUNT ? "auto" : "none"}
                     crossOrigin="anonymous"
                     className='h-full w-full object-cover'
                     style={{
@@ -339,6 +426,20 @@ export default function Minis(): JSX.Element {
               </div>
             </div>
           )}
+          )}
+          
+          {/* Loading more indicator */}
+          {loadingMore && (
+            <div className='flex items-center justify-center py-8'>
+              <Loading />
+            </div>
+          )}
+          
+          {/* End of content */}
+          {!hasMore && minis.length > 0 && (
+            <div className='flex items-center justify-center py-8 text-light-secondary dark:text-dark-secondary'>
+              <p>You've reached the end! 🎉</p>
+            </div>
           )}
           </div>
 
