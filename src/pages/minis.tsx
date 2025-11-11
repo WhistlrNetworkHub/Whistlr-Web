@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@lib/context/auth-context';
+import { videoManager } from '@lib/video/VideoManager';
+import { performanceOptimizer } from '@lib/video/PerformanceOptimizer';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
@@ -11,8 +13,10 @@ import { HeroIcon } from '@components/ui/hero-icon';
 import { UserAvatar } from '@components/user/user-avatar';
 import type { ReactElement, ReactNode } from 'react';
 
-const BATCH_SIZE = 10; // Load videos in batches
-const PRELOAD_COUNT = 2; // Preload 2 videos ahead
+// Get optimized settings based on device
+const optimizationStrategy = performanceOptimizer.getOptimizedInitStrategy();
+const BATCH_SIZE = optimizationStrategy.prefetchDistance; // Device-adaptive batch size
+const PRELOAD_COUNT = optimizationStrategy.videoPrefetchCount; // Device-adaptive preload
 
 interface Mini {
   id: string;
@@ -95,9 +99,19 @@ export default function Minis(): JSX.Element {
     setLoadingMore(false);
   }, [lastVideoId, loadingMore]);
 
-  // Initial load
+  // Initial load and session start
   useEffect(() => {
+    // Start performance tracking session
+    performanceOptimizer.startSession();
+    console.log('📊 [MINIS] Performance tracking started');
+    console.log(performanceOptimizer.getPerformanceReport());
+    
     fetchMinis(true);
+    
+    return () => {
+      // Cleanup on unmount
+      videoManager.cleanupAllPlayers();
+    };
   }, []);
 
   // Preload adjacent videos
@@ -151,33 +165,25 @@ export default function Minis(): JSX.Element {
     };
   }, [currentIndex, minis.length, hasMore, loadingMore, fetchMinis, preloadVideo]);
 
-  // Auto-play current video with smooth transition
+  // Auto-play current video with smooth transition using VideoManager
   useEffect(() => {
     if (minis.length > 0 && currentIndex >= 0) {
-      // Pause all videos first
-      videoRefs.current.forEach((video, idx) => {
-        if (video && idx !== currentIndex) {
-          video.pause();
-        }
-      });
+      const currentMini = minis[currentIndex];
+      if (!currentMini) return;
       
-      // Play current video after small delay
+      // Track video play for performance monitoring
+      performanceOptimizer.trackVideoPlay();
+      
+      // Use VideoManager for centralized playback control
       const timer = setTimeout(() => {
-        const currentVideo = videoRefs.current[currentIndex];
-        if (currentVideo) {
-          currentVideo.play()
-            .then(() => {
-              setIsPlaying(true);
-              playingRef.current = currentIndex;
-              console.log('▶️ Auto-playing video:', currentIndex);
-            })
-            .catch(e => console.error('Play error:', e));
-        }
+        videoManager.playVideo(currentMini.id);
+        setIsPlaying(true);
+        playingRef.current = currentIndex;
       }, 150);
 
       return () => clearTimeout(timer);
     }
-  }, [currentIndex, minis.length]);
+  }, [currentIndex, minis.length, minis]);
 
   // Removed old scroll handler - using Intersection Observer instead
 
@@ -222,7 +228,17 @@ export default function Minis(): JSX.Element {
   return (
     <MainContainer>
       <SEO title='Minis / Whistlr' />
-      <MainHeader title='Minis' className='flex items-center justify-between' />
+      <MainHeader title='Minis' className='flex items-center justify-between'>
+        {/* Performance debug info (remove in production) */}
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={() => console.log(performanceOptimizer.getPerformanceReport())}
+            className='text-xs text-light-secondary hover:text-accent-blue'
+          >
+            📊 Performance
+          </button>
+        )}
+      </MainHeader>
       
       {loading ? (
         <Loading className='mt-5' />
@@ -296,15 +312,23 @@ export default function Minis(): JSX.Element {
                     }
                   }}
                 >
-                  {/* Using native HTML5 video with proper attributes for Supabase */}
+                  {/* Using native HTML5 video with VideoManager integration */}
                   <video
-                    ref={(el) => (videoRefs.current[index] = el)}
-                    id={`video-${index}`}
+                    ref={(el) => {
+                      videoRefs.current[index] = el;
+                      // Register with VideoManager
+                      if (el && fullVideoUrl) {
+                        const managedVideo = videoManager.getPlayer(mini.id, fullVideoUrl);
+                        // Copy managed video attributes to our ref
+                        videoRefs.current[index] = managedVideo;
+                      }
+                    }}
+                    id={`video-${mini.id}`}
                     src={fullVideoUrl}
                     loop
                     muted
                     playsInline
-                    preload={index <= currentIndex + PRELOAD_COUNT ? "auto" : "none"}
+                    preload={index <= currentIndex + PRELOAD_COUNT ? "auto" : "metadata"}
                     crossOrigin="anonymous"
                     className='h-full w-full object-cover'
                     style={{
