@@ -426,7 +426,7 @@ export default function UserProfile(): JSX.Element {
         ) : !posts || posts.length === 0 ? (
           <div className='flex flex-col items-center justify-center py-20'>
             <p className='text-xl font-semibold text-white'>No {activeTab} yet</p>
-            <p className='text-white/60 text-sm mt-2'>When they post, it'll show up here</p>
+            <p className='text-white/60 text-sm mt-2'>When they whistle, it'll show up here</p>
           </div>
         ) : (
           <>

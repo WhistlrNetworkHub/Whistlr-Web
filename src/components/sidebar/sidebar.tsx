@@ -137,7 +137,7 @@ export function Sidebar(): JSX.Element {
             {!isMobile && <MoreSettings />}
           </nav>
           
-          {/* Tweet Button */}
+          {/* Whistle Button */}
           <Button
             className='accent-tab mt-4 hidden bg-main-accent text-lg font-bold text-white
                        outline-none transition hover:brightness-90 active:brightness-75 
@@ -149,7 +149,7 @@ export function Sidebar(): JSX.Element {
               className='block h-6 w-6 xl:hidden'
               iconName='FeatherIcon'
             />
-            <p className='hidden xl:block'>Tweet</p>
+            <p className='hidden xl:block'>Whistle</p>
           </Button>
         </section>
         

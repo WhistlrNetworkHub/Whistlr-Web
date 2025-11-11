@@ -40,7 +40,7 @@ export default function UserMedia(): JSX.Element {
         <Loading className='mt-5' />
       ) : mediaPosts.length === 0 ? (
         <StatsEmpty
-          title={`@${username as string} hasn't posted media`}
+          title={`@${username as string} hasn't whistled media`}
           description='Once they do, those posts will show up here.'
           imageData={{ src: '/assets/no-media.png', alt: 'No media' }}
         />

@@ -61,8 +61,8 @@ export default function UserWithReplies(): JSX.Element {
         <Loading className='mt-5' />
       ) : (!posts || posts.length === 0) && (!comments || comments.length === 0) ? (
         <StatsEmpty
-          title={`@${username as string} hasn't posted yet`}
-          description='When they do, their posts will show up here.'
+          title={`@${username as string} hasn't whistled yet`}
+          description='When they do, their whistles will show up here.'
         />
       ) : (
         <AnimatePresence mode='popLayout'>
