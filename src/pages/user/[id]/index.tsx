@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { supabase } from '@lib/supabase/client';
 import { useAuth } from '@lib/context/auth-context';
 import { useInfiniteScroll } from '@lib/hooks/useInfiniteScroll';
+import { useModal } from '@lib/hooks/useModal';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
@@ -13,6 +14,7 @@ import { Tweet } from '@components/tweet/tweet';
 import { Loading } from '@components/ui/loading';
 import { Button } from '@components/ui/button';
 import { HeroIcon } from '@components/ui/hero-icon';
+import { FollowersModal } from '@components/modal/followers-modal';
 import type { ReactElement, ReactNode } from 'react';
 
 export default function UserProfile(): JSX.Element {
@@ -24,6 +26,11 @@ export default function UserProfile(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'media' | 'likes'>('posts');
+  const [modalType, setModalType] = useState<'followers' | 'following'>('followers');
+  const [followerAvatars, setFollowerAvatars] = useState<string[]>([]);
+  const [followingAvatars, setFollowingAvatars] = useState<string[]>([]);
+  
+  const { open: followModalOpen, openModal: openFollowModal, closeModal: closeFollowModal } = useModal();
 
   const { data: posts, loading: postsLoading, LoadMore } = useInfiniteScroll(
     'posts',
@@ -94,6 +101,57 @@ export default function UserProfile(): JSX.Element {
     loadProfile();
   }, [id, currentUser]);
 
+  // Load follower and following avatars
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const loadAvatars = async () => {
+      try {
+        // Load follower avatars (first 3)
+        const { data: followersData } = await supabase
+          .from('follows')
+          .select('follower_id')
+          .eq('following_id', profile.id)
+          .limit(3);
+
+        if (followersData && followersData.length > 0) {
+          const followerIds = followersData.map((f) => f.follower_id);
+          const { data: usersData } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .in('id', followerIds);
+
+          if (usersData) {
+            setFollowerAvatars(usersData.map((u) => u.avatar_url || '/default-avatar.png'));
+          }
+        }
+
+        // Load following avatars (first 2)
+        const { data: followingData } = await supabase
+          .from('follows')
+          .select('following_id')
+          .eq('follower_id', profile.id)
+          .limit(2);
+
+        if (followingData && followingData.length > 0) {
+          const followingIds = followingData.map((f) => f.following_id);
+          const { data: usersData } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .in('id', followingIds);
+
+          if (usersData) {
+            setFollowingAvatars(usersData.map((u) => u.avatar_url || '/default-avatar.png'));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading avatars:', error);
+      }
+    };
+
+    loadAvatars();
+  }, [profile?.id]);
+
   const handleFollow = async () => {
     if (!currentUser || !profile) return;
 
@@ -155,10 +213,18 @@ export default function UserProfile(): JSX.Element {
         className='glass-morphism-strong border-b border-white/5'
       />
 
+      <FollowersModal
+        open={followModalOpen}
+        closeModal={closeFollowModal}
+        profileId={profile.id}
+        type={modalType}
+        username={profile.username}
+      />
+
       {/* iOS-Style Profile Header with Cover Banner */}
       <div className='relative'>
-        {/* Cover Photo Banner */}
-        <div className='relative h-[450px] mx-4 mt-4 rounded-3xl overflow-hidden'>
+        {/* Cover Photo Banner - Taller */}
+        <div className='relative h-[550px] mx-4 mt-4 rounded-3xl overflow-hidden'>
           {/* Cover Image */}
           <img
             src={coverUrl}
@@ -173,18 +239,8 @@ export default function UserProfile(): JSX.Element {
           {/* Gradient Overlay */}
           <div className='absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80' />
 
-          {/* Top Overlay - Username & Follow Button */}
-          <div className='absolute top-0 left-0 right-0 p-5 flex items-start justify-between'>
-            {/* Username Pill */}
-            <div className='flex items-center gap-2 px-3 py-2 rounded-2xl glass-morphism-strong border border-white/20'>
-              <img
-                src={avatarUrl}
-                alt={profile.username}
-                className='w-7 h-7 rounded-full object-cover'
-              />
-              <span className='text-sm font-medium text-white'>@{profile.username}</span>
-            </div>
-
+          {/* Top Overlay - Follow/Edit Button Only */}
+          <div className='absolute top-5 right-5'>
             {/* Follow/Edit Button */}
             {isOwnProfile ? (
               <Button
@@ -207,10 +263,20 @@ export default function UserProfile(): JSX.Element {
             )}
           </div>
 
-          {/* Bottom Overlay - Display Name & Mood */}
-          <div className='absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between'>
+          {/* Bottom Right Overlay - Username & Display Name */}
+          <div className='absolute bottom-5 right-5 text-right'>
+            {/* Username Pill */}
+            <div className='inline-flex items-center gap-2 px-3 py-2 rounded-2xl glass-morphism-strong border border-white/20 mb-2'>
+              <img
+                src={avatarUrl}
+                alt={profile.username}
+                className='w-7 h-7 rounded-full object-cover'
+              />
+              <span className='text-sm font-medium text-white'>@{profile.username}</span>
+            </div>
+
             {/* Display Name */}
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center justify-end gap-2'>
               <h1 className='text-3xl font-bold text-white drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                 {profile.full_name || profile.username}
               </h1>
@@ -223,7 +289,7 @@ export default function UserProfile(): JSX.Element {
 
             {/* Mood/Status */}
             {profile.bio && (
-              <div className='px-3 py-1.5 rounded-2xl glass-morphism-strong border border-white/20'>
+              <div className='inline-block px-3 py-1.5 rounded-2xl glass-morphism-strong border border-white/20 mt-2'>
                 <span className='text-xs font-medium text-white'>✨ Chill AF</span>
               </div>
             )}
@@ -262,28 +328,62 @@ export default function UserProfile(): JSX.Element {
             </a>
           )}
 
-          {/* Circle Stats - iOS Style */}
+          {/* Circle Stats - iOS Style with Real Avatars */}
           <div className='flex gap-4 mt-6'>
-            {/* In Your Circle */}
-            <button className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'>
+            {/* In Your Circle - Followers */}
+            <button 
+              className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'
+              onClick={() => {
+                setModalType('followers');
+                openFollowModal();
+              }}
+            >
               <div className='flex items-center justify-center gap-2 mb-2'>
                 <div className='flex -space-x-2'>
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className='w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 border-2 border-black' />
-                  ))}
+                  {followerAvatars.length > 0 ? (
+                    followerAvatars.map((avatar, i) => (
+                      <img
+                        key={i}
+                        src={avatar}
+                        alt='Follower'
+                        className='w-8 h-8 rounded-full object-cover border-2 border-black'
+                      />
+                    ))
+                  ) : (
+                    [1, 2, 3].map((i) => (
+                      <div key={i} className='w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 border-2 border-black' />
+                    ))
+                  )}
                 </div>
               </div>
               <p className='text-2xl font-bold text-white text-center'>{profile.followers_count?.toLocaleString() || 0}</p>
               <p className='text-sm text-white/60 text-center'>in your circle</p>
             </button>
 
-            {/* Circles Joined */}
-            <button className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'>
+            {/* Circles Joined - Following */}
+            <button 
+              className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'
+              onClick={() => {
+                setModalType('following');
+                openFollowModal();
+              }}
+            >
               <div className='flex items-center justify-center gap-2 mb-2'>
                 <div className='flex -space-x-2'>
-                  {[1, 2].map((i) => (
-                    <div key={i} className='w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-400 border-2 border-black' />
-                  ))}
+                  {followingAvatars.length > 0 ? (
+                    followingAvatars.map((avatar, i) => (
+                      <img
+                        key={i}
+                        src={avatar}
+                        alt='Following'
+                        className='w-8 h-8 rounded-full object-cover border-2 border-black'
+                      />
+                    ))
+                  ) : (
+                    [1, 2].map((i) => (
+                      <div key={i} className='w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-400 border-2 border-black' />
+                    ))
+                  )}
                 </div>
               </div>
               <p className='text-2xl font-bold text-white text-center'>{profile.following_count?.toLocaleString() || 0}</p>
