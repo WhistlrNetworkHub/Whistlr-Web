@@ -54,6 +54,10 @@ export default function UserProfile(): JSX.Element {
           .eq('username', id)
           .maybeSingle();
 
+        console.log('👤 Loaded profile:', data);
+        console.log('🆔 Profile ID (UUID):', data?.id);
+        console.log('👤 Profile username:', data?.username);
+
         if (!error && data) {
           setProfile(data);
 
@@ -220,10 +224,12 @@ export default function UserProfile(): JSX.Element {
       />
       {/* Debug modal state */}
       {followModalOpen && (
-        <div style={{ position: 'fixed', top: 10, right: 10, background: 'black', color: 'white', padding: '10px', zIndex: 9999, fontSize: '12px', fontFamily: 'monospace' }}>
-          Modal Type: <strong>{modalType}</strong><br />
-          Profile ID: {profile.id}<br />
-          Username: {profile.username}
+        <div style={{ position: 'fixed', top: 10, right: 10, background: 'black', color: 'lime', padding: '10px', zIndex: 9999, fontSize: '12px', fontFamily: 'monospace', border: '2px solid lime' }}>
+          <strong>DEBUG INFO:</strong><br />
+          Modal Type: <strong style={{ color: modalType === 'followers' ? 'cyan' : 'yellow' }}>{modalType}</strong><br />
+          Profile ID: <span style={{ color: 'orange' }}>{profile.id}</span><br />
+          Username: {profile.username}<br />
+          Is UUID?: {profile.id?.includes('-') ? '✅ YES' : '❌ NO (might be username!)'}
         </div>
       )}
 
