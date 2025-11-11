@@ -67,14 +67,15 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
     avatar_url
   } = userData || {};
 
-  // Handle images
+  // Handle images - media_urls is an array of strings
   let images: any = null;
-  if (media_urls) {
-    try {
-      images = typeof media_urls === 'string' ? JSON.parse(media_urls) : media_urls;
-    } catch {
-      images = media_urls;
-    }
+  if (media_urls && Array.isArray(media_urls) && media_urls.length > 0) {
+    // Transform to format expected by ImagePreview
+    images = media_urls.map((url, index) => ({
+      id: `${tweetId}-${index}`,
+      src: url,
+      alt: `Image ${index + 1}`
+    }));
   }
 
   return (
