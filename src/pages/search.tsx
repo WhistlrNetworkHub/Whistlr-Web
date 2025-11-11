@@ -19,6 +19,8 @@ interface SearchPost {
   media_type: string | null;
   likes_count: number;
   comments_count: number;
+  views_count: number;
+  thumbnail_url: string | null;
   created_at: string;
   user?: {
     id: string;
@@ -65,7 +67,7 @@ export default function Search(): JSX.Element {
       let query = supabase
         .from('posts')
         .select(`
-          id, author_id, content, media_urls, media_type, likes_count, comments_count, created_at,
+          id, author_id, content, media_urls, media_type, likes_count, comments_count, views_count, thumbnail_url, created_at,
           user:author_id(id, username, full_name, avatar_url, is_verified)
         `);
 
@@ -98,6 +100,8 @@ export default function Search(): JSX.Element {
             media_type: 'creator',
             likes_count: 0,
             comments_count: 0,
+            views_count: 0,
+            thumbnail_url: null,
             created_at: new Date().toISOString(),
             user: {
               id: profile.id,
@@ -329,9 +333,12 @@ export default function Search(): JSX.Element {
                             <p className='text-[10px] font-semibold text-white/90 drop-shadow-md' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                               by @{post.user?.username}
                             </p>
-                            <p className='text-[9px] font-medium text-white/80 drop-shadow-md' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
-                              {formatCount(post.likes_count)} whistles
-                            </p>
+                            <div className='flex items-center gap-1'>
+                              <HeroIcon iconName='EyeIcon' className='h-2.5 w-2.5 text-white/80' />
+                              <p className='text-[9px] font-medium text-white/80 drop-shadow-md' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
+                                {formatCount(post.views_count || 0)} views
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </motion.div>
@@ -489,8 +496,14 @@ export default function Search(): JSX.Element {
                     content: post.content?.substring(0, 50)
                   });
 
-                  const videoUrl = post.media_urls && post.media_urls[0] ? getFullImageURL(post.media_urls[0]) : null;
-                  console.log(`Video URL for post ${index}:`, videoUrl);
+                  // Use thumbnail for Mini's, actual media for Imprints
+                  const displayUrl = selectedCategory === "Mini's" && post.thumbnail_url 
+                    ? getFullImageURL(post.thumbnail_url)
+                    : post.media_urls && post.media_urls[0] 
+                    ? getFullImageURL(post.media_urls[0])
+                    : null;
+                  
+                  console.log(`Post ${index} display URL:`, displayUrl);
 
                   return (
                     <Link key={post.id} href={`/tweet/${post.id}`}>
@@ -504,42 +517,20 @@ export default function Search(): JSX.Element {
                         }`}
                       >
                         {/* Media */}
-                        {post.media_urls && post.media_urls[0] ? (
-                          selectedCategory === "Mini's" ? (
-                            <video
-                              key={videoUrl}
-                              src={videoUrl || ''}
-                              className='w-full h-full object-cover'
-                              poster={videoUrl || ''}
-                              muted
-                              playsInline
-                              preload='metadata'
-                              onError={(e) => {
-                                const target = e.target as HTMLVideoElement;
-                                console.error('Video error:', {
-                                  src: target.src,
-                                  error: target.error?.message,
-                                  code: target.error?.code,
-                                  networkState: target.networkState,
-                                  readyState: target.readyState
-                                });
-                              }}
-                              onLoadedMetadata={(e) => {
-                                console.log('Video loaded:', (e.target as HTMLVideoElement).src);
-                              }}
-                            />
-                          ) : (
-                            <img
-                              src={getFullImageURL(post.media_urls[0])}
-                              alt='Post media'
-                              className='w-full h-full object-cover'
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                console.error('Image error:', target.src);
-                                target.src = '/default-avatar.png';
-                              }}
-                            />
-                          )
+                        {displayUrl ? (
+                          <img
+                            src={displayUrl}
+                            alt='Post media'
+                            className='w-full h-full object-cover'
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              console.error('Image error:', target.src);
+                              target.src = '/default-avatar.png';
+                            }}
+                            onLoad={() => {
+                              console.log(`Image loaded successfully: ${displayUrl}`);
+                            }}
+                          />
                         ) : (
                           <div className='w-full h-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center'>
                             <p className='text-white/60 text-sm'>No media</p>
@@ -549,11 +540,11 @@ export default function Search(): JSX.Element {
                         {/* Border Glow */}
                         <div className='absolute inset-0 rounded-xl border border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]' />
 
-                        {/* Likes Badge */}
+                        {/* Views Badge */}
                         <div className='absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full glass-morphism-strong border border-white/20 backdrop-blur-xl shadow-lg'>
-                          <div className='w-2.5 h-2.5 text-blue-400'>♪</div>
+                          <HeroIcon iconName='EyeIcon' className='h-3 w-3 text-white/90' />
                           <span className='text-[11px] font-bold text-white'>
-                            {formatCount(post.likes_count)}
+                            {formatCount(post.views_count || 0)}
                           </span>
                         </div>
 
@@ -567,7 +558,7 @@ export default function Search(): JSX.Element {
                         )}
 
                         {/* Play Icon for Videos */}
-                        {selectedCategory === "Mini's" && post.media_urls && post.media_urls[0] && (
+                        {selectedCategory === "Mini's" && displayUrl && (
                           <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
                             <div className='w-14 h-14 rounded-full glass-morphism-strong border border-white/30 flex items-center justify-center shadow-2xl'>
                               <HeroIcon iconName='PlayIcon' className='h-7 w-7 text-white ml-1' />
