@@ -33,7 +33,9 @@ export default function Home(): JSX.Element {
         title='Chattr'
         className='flex items-center justify-between'
       />
-      {!isMobile && <Input />}
+      <div className='pt-16'>
+        {!isMobile && <Input />}
+      </div>
       <section className='mt-0.5 xs:mt-0'>
         {loading ? (
           <Loading className='mt-5' />

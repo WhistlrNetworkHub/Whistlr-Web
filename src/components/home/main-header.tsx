@@ -53,7 +53,7 @@ export function MainHeader({
       {title && (
         <div className='absolute left-6 top-6 z-50 pointer-events-none'>
           {useMobileSidebar && <MobileSidebar />}
-          <h1 className='text-white text-3xl font-semibold tracking-tight uppercase' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }} key={title}>
+          <h1 className='text-white text-3xl font-semibold tracking-tight' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }} key={title}>
             {title}
           </h1>
         </div>
