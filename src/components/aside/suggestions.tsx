@@ -15,7 +15,7 @@ const variants: Variants = {
 };
 
 export function Suggestions(): React.ReactElement {
-  const { randomSeed } = useAuth();
+  const { user } = useAuth();
 
   // Fetch admin/featured user (you can replace this ID with your actual admin user ID)
   const { data: adminData, loading: adminLoading } = useDocument(
