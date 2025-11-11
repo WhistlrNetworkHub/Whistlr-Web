@@ -92,19 +92,33 @@ export function FollowersModal({
   return (
     <Modal
       className='flex items-center justify-center'
-      modalClassName='relative glass-morphism-strong rounded-2xl max-w-xl w-full h-[672px] overflow-hidden'
+      modalClassName='relative rounded-2xl max-w-xl w-full h-[672px] overflow-hidden border border-white/10 shadow-2xl'
       open={open}
       closeModal={closeModal}
     >
-      <MainHeader
-        useActionButton
-        className='absolute top-0 w-full glass-morphism-strong border-b border-white/5 z-10'
-        iconName='XMarkIcon'
-        title={type === 'followers' ? `Followers` : `Following`}
-        tip='Close'
-        action={closeModal}
+      <div 
+        className='absolute inset-0 rounded-2xl'
+        style={{
+          background: 'rgba(10, 10, 10, 0.95)',
+          backdropFilter: 'blur(40px)',
+          WebkitBackdropFilter: 'blur(40px)'
+        }}
       />
-      <section className='h-full overflow-y-auto pt-[52px]'>
+      <div className='relative z-10 h-full flex flex-col'>
+        <MainHeader
+          useActionButton
+          className='border-b border-white/5'
+          style={{
+            background: 'rgba(10, 10, 10, 0.6)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)'
+          }}
+          iconName='XMarkIcon'
+          title={type === 'followers' ? `Followers` : `Following`}
+          tip='Close'
+          action={closeModal}
+        />
+        <section className='flex-1 overflow-y-auto'>
         {loading ? (
           <Loading className='mt-20' />
         ) : users.length === 0 ? (
@@ -129,7 +143,8 @@ export function FollowersModal({
             ))}
           </AnimatePresence>
         )}
-      </section>
+        </section>
+      </div>
     </Modal>
   );
 }
