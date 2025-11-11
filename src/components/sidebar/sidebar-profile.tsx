@@ -18,7 +18,12 @@ export function SidebarProfile(): JSX.Element {
   const { user, signOut } = useAuth();
   const { open, openModal, closeModal } = useModal();
 
-  const { name, username, verified, photoURL } = user as User;
+  const { full_name, username, is_verified, avatar_url } = user as User;
+  
+  // Legacy compatibility
+  const name = full_name;
+  const verified = is_verified;
+  const photoURL = avatar_url;
 
   return (
     <>

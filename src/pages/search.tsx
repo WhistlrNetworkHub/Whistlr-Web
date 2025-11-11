@@ -41,7 +41,7 @@ export default function Search(): JSX.Element {
       // Search users
       const { data: usersData } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, username, full_name, avatar_url, bio, is_verified, followers_count, following_count')
         .or(`username.ilike.%${q}%,full_name.ilike.%${q}%`)
         .limit(20);
 

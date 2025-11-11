@@ -13,7 +13,12 @@ type UserCardProps = User & {
 };
 
 export function UserCard(user: UserCardProps): JSX.Element {
-  const { id, bio, name, modal, follow, username, verified, photoURL } = user;
+  const { id, bio, full_name, modal, follow, username, is_verified, avatar_url } = user;
+  
+  // Legacy compatibility
+  const name = full_name;
+  const verified = is_verified;
+  const photoURL = avatar_url;
 
   return (
     <Link 
