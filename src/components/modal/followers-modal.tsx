@@ -34,11 +34,16 @@ export function FollowersModal({
   useEffect(() => {
     if (!open || !profileId) return;
 
+    // Reset users when modal opens with different type
+    setUsers([]);
+    
     const loadUsers = async () => {
       setLoading(true);
-      console.log('🚀 Loading users for modal');
-      console.log('Type:', type);
+      console.log('🚀 ========== MODAL OPENED ==========');
+      console.log('Type received:', type);
       console.log('Profile ID:', profileId);
+      console.log('Is FOLLOWERS?', type === 'followers');
+      console.log('Is FOLLOWING?', type === 'following');
       
       try {
         if (type === 'followers') {
