@@ -289,7 +289,7 @@ export default function Minis(): JSX.Element {
                   observerRef.current.observe(el);
                 }
               }}
-              className='relative flex w-full snap-start snap-always items-center justify-center bg-black overflow-hidden'
+              className='relative flex w-full snap-start snap-always items-center justify-center overflow-hidden'
               style={{ height: '100vh', borderRadius: '0 0 0 0' }}
             >
               {/* Video player */}
@@ -334,7 +334,6 @@ export default function Minis(): JSX.Element {
                       position: 'absolute',
                       top: 0,
                       left: 0,
-                      backgroundColor: '#000',
                       borderRadius: '32px'
                     }}
                     onLoadedMetadata={() => {
@@ -378,7 +377,7 @@ export default function Minis(): JSX.Element {
                   />
                   {/* Play/Pause indicator */}
                   {index === currentIndex && !isPlaying && (
-                    <div className='absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none'>
+                    <div className='absolute inset-0 flex items-center justify-center glass-morphism-light pointer-events-none'>
                       <div className='rounded-full bg-white/90 p-4'>
                         <HeroIcon className='h-12 w-12 text-black' iconName='PlayIcon' solid />
                       </div>

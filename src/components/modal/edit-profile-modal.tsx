@@ -149,7 +149,7 @@ export function EditProfileModal({
             >
               <NextImage
                 useSkeleton
-                className='h-full w-full bg-main-background inner:!m-1 inner:rounded-full'
+                className='h-full w-full glass-morphism inner:!m-1 inner:rounded-full'
                 imgClassName='rounded-full transition group-hover:brightness-75 duration-200
                               group-focus-within:brightness-75'
                 src={photoURL}

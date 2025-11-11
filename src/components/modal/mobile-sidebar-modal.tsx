@@ -106,14 +106,14 @@ export function MobileSidebarModal({
     <>
       <Modal
         className='items-center justify-center xs:flex'
-        modalClassName='max-w-xl bg-main-background w-full p-8 rounded-2xl hover-animation'
+        modalClassName='max-w-xl glass-morphism-strong w-full p-8 rounded-2xl hover-animation'
         open={displayOpen}
         closeModal={displayCloseModal}
       >
         <DisplayModal closeModal={displayCloseModal} />
       </Modal>
       <Modal
-        modalClassName='max-w-xs bg-main-background w-full p-8 rounded-2xl'
+        modalClassName='max-w-xs glass-morphism-strong w-full p-8 rounded-2xl'
         open={logOutOpen}
         closeModal={logOutCloseModal}
       >
@@ -153,7 +153,7 @@ export function MobileSidebarModal({
         </Link>
         <div className='mb-8 ml-2 -mt-4'>
           <UserAvatar
-            className='absolute -translate-y-1/2 bg-main-background p-1 hover:brightness-100
+            className='absolute -translate-y-1/2 glass-morphism p-1 hover:brightness-100
                        [&>figure>span]:[transition:200ms]
                        [&:hover>figure>span]:brightness-75'
             username={username}

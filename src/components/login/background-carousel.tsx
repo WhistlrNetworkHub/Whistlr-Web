@@ -74,7 +74,7 @@ export const BackgroundCarousel = memo(() => {
               }}
             />
             {/* Dark tint overlay */}
-            <div className='absolute inset-0 bg-black/60' />
+            <div className='absolute inset-0 glass-morphism' />
           </div>
         );
       })}
@@ -89,7 +89,7 @@ export const BackgroundCarousel = memo(() => {
             })`
           }}
         />
-        <div className='absolute inset-0 bg-black/60' />
+        <div className='absolute inset-0 glass-morphism' />
       </div>
     </>
   );
