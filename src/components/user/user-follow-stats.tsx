@@ -4,17 +4,19 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NumberStats } from '@components/tweet/number-stats';
-import type { User } from '@lib/types/user';
 
-type UserFollowStatsProps = Pick<User, 'following' | 'followers'>;
+type UserFollowStatsProps = {
+  following_count: number;
+  followers_count: number;
+};
 type Stats = [string, string, number, number];
 
 export function UserFollowStats({
-  following,
-  followers
+  following_count,
+  followers_count
 }: UserFollowStatsProps): JSX.Element {
-  const totalFollowing = following.length;
-  const totalFollowers = followers.length;
+  const totalFollowing = following_count || 0;
+  const totalFollowers = followers_count || 0;
 
   const [{ currentFollowers, currentFollowing }, setCurrentStats] = useState({
     currentFollowing: totalFollowing,
