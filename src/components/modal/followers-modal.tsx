@@ -32,77 +32,54 @@ export function FollowersModal({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!open || !profileId) {
-      console.log('⚠️ Modal not open or no profileId', { open, profileId });
-      return;
-    }
+    if (!open || !profileId) return;
 
     const loadUsers = async () => {
       setLoading(true);
-      console.log(`🔍 Loading ${type} for profile:`, profileId);
-      console.log(`📊 Type check - looking for people who ${type === 'followers' ? 'follow this user' : 'this user follows'}`);
-      
       try {
         if (type === 'followers') {
           // Get users who follow this profile
-          console.log('📥 Query: SELECT follower_id FROM follows WHERE following_id =', profileId);
-          const { data: followData, error: followError } = await supabase
+          const { data: followData } = await supabase
             .from('follows')
             .select('follower_id')
             .eq('following_id', profileId);
 
-          console.log(`✅ Raw follows data (${followData?.length || 0} rows):`, followData);
-          console.log('❌ Error:', followError);
-
           if (followData && followData.length > 0) {
             const followerIds = followData.map((f) => f.follower_id);
-            console.log('Follower IDs:', followerIds);
-            
-            const { data: usersData, error: usersError } = await supabase
+            const { data: usersData } = await supabase
               .from('profiles')
               .select('*')
               .in('id', followerIds);
 
-            console.log('Follower profiles:', usersData, 'Error:', usersError);
-
             if (usersData) {
               setUsers(usersData as User[]);
             }
           } else {
-            console.log('No followers found');
             setUsers([]);
           }
         } else {
           // Get users this profile follows
-          console.log('📤 Fetching following (people this profile follows)');
-          const { data: followData, error: followError } = await supabase
+          const { data: followData } = await supabase
             .from('follows')
             .select('following_id')
             .eq('follower_id', profileId);
 
-          console.log('Following data:', followData, 'Error:', followError);
-
           if (followData && followData.length > 0) {
             const followingIds = followData.map((f) => f.following_id);
-            console.log('Following IDs:', followingIds);
-            
-            const { data: usersData, error: usersError } = await supabase
+            const { data: usersData } = await supabase
               .from('profiles')
               .select('*')
               .in('id', followingIds);
-
-            console.log('Following profiles:', usersData, 'Error:', usersError);
 
             if (usersData) {
               setUsers(usersData as User[]);
             }
           } else {
-            console.log('No following found');
             setUsers([]);
           }
         }
       } catch (error) {
-        console.error('❌ Error loading users:', error);
+        console.error('Error loading users:', error);
         setUsers([]);
       } finally {
         setLoading(false);

@@ -54,10 +54,6 @@ export default function UserProfile(): JSX.Element {
           .eq('username', id)
           .maybeSingle();
 
-        console.log('👤 Loaded profile:', data);
-        console.log('🆔 Profile ID (UUID):', data?.id);
-        console.log('👤 Profile username:', data?.username);
-
         if (!error && data) {
           setProfile(data);
 
@@ -214,24 +210,11 @@ export default function UserProfile(): JSX.Element {
 
       <FollowersModal
         open={followModalOpen}
-        closeModal={() => {
-          console.log('🚪 Closing modal');
-          closeFollowModal();
-        }}
+        closeModal={closeFollowModal}
         profileId={profile.id}
         type={modalType}
         username={profile.username}
       />
-      {/* Debug modal state */}
-      {followModalOpen && (
-        <div style={{ position: 'fixed', top: 10, right: 10, background: 'black', color: 'lime', padding: '10px', zIndex: 9999, fontSize: '12px', fontFamily: 'monospace', border: '2px solid lime' }}>
-          <strong>DEBUG INFO:</strong><br />
-          Modal Type: <strong style={{ color: modalType === 'followers' ? 'cyan' : 'yellow' }}>{modalType}</strong><br />
-          Profile ID: <span style={{ color: 'orange' }}>{profile.id}</span><br />
-          Username: {profile.username}<br />
-          Is UUID?: {profile.id?.includes('-') ? '✅ YES' : '❌ NO (might be username!)'}
-        </div>
-      )}
 
       {/* iOS-Style Profile Header with Cover Banner */}
       <div className='relative'>
@@ -341,7 +324,6 @@ export default function UserProfile(): JSX.Element {
             <button 
               className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'
               onClick={() => {
-                console.log('🔵 FOLLOWERS button clicked - setting modalType to followers');
                 setModalType('followers');
                 openFollowModal();
               }}
@@ -372,7 +354,6 @@ export default function UserProfile(): JSX.Element {
             <button 
               className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'
               onClick={() => {
-                console.log('🟢 FOLLOWING button clicked - setting modalType to following');
                 setModalType('following');
                 openFollowModal();
               }}
