@@ -228,17 +228,6 @@ export default function Minis(): JSX.Element {
   return (
     <MainContainer>
       <SEO title='Minis / Whistlr' />
-      <MainHeader title='Minis' className='flex items-center justify-between'>
-        {/* Performance debug info (remove in production) */}
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={() => console.log(performanceOptimizer.getPerformanceReport())}
-            className='text-xs text-light-secondary hover:text-accent-blue'
-          >
-            📊 Performance
-          </button>
-        )}
-      </MainHeader>
       
       {loading ? (
         <Loading className='mt-5' />
@@ -249,7 +238,14 @@ export default function Minis(): JSX.Element {
           <p className='mt-2 text-light-secondary dark:text-dark-secondary'>Video content will appear here</p>
         </div>
       ) : (
-        <div className='relative' style={{ height: 'calc(100vh - 120px)' }}>
+        <div className='relative' style={{ height: '100vh' }}>
+          {/* Floating Title */}
+          <div className='absolute top-8 left-0 right-0 z-50 flex items-center justify-center pointer-events-none'>
+            <h1 className='text-white text-2xl font-bold tracking-wider uppercase drop-shadow-lg'>
+              MINIS
+            </h1>
+          </div>
+          
           {/* TikTok-style vertical scroll container */}
           <div
             ref={containerRef}
@@ -291,7 +287,7 @@ export default function Minis(): JSX.Element {
                 }
               }}
               className='relative flex w-full snap-start snap-always items-center justify-center bg-black'
-              style={{ height: 'calc(100vh - 120px)' }}
+              style={{ height: '100vh' }}
             >
               {/* Video player */}
               {fullVideoUrl ? (
