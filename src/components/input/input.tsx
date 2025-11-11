@@ -259,7 +259,7 @@ export function Input({
           </Link>
         </motion.div>
       )}
-      <div className='flex gap-2 px-4 pt-3'>
+      <div className='flex gap-2 px-4 pt-3 pb-2 mx-4 my-2 rounded-3xl glass-morphism-strong border border-white/10 shadow-xl'>
         <UserAvatar
           src={user?.avatar_url || ''}
           alt={user?.full_name || user?.username || 'User'}
