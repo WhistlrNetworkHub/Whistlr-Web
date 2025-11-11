@@ -246,11 +246,14 @@ export default function Minis(): JSX.Element {
             </h1>
           </div>
           
-          {/* TikTok-style vertical scroll container */}
+          {/* TikTok-style vertical scroll container with device corners */}
           <div
             ref={containerRef}
             className='hide-scrollbar h-full snap-y snap-mandatory overflow-y-scroll'
-            style={{ scrollBehavior: 'smooth' }}
+            style={{ 
+              scrollBehavior: 'smooth',
+              padding: '0 8px'
+            }}
           >
           {minis.map((mini, index) => {
             const videoUrl = mini.media_urls?.[0];
@@ -286,8 +289,8 @@ export default function Minis(): JSX.Element {
                   observerRef.current.observe(el);
                 }
               }}
-              className='relative flex w-full snap-start snap-always items-center justify-center bg-black'
-              style={{ height: '100vh' }}
+              className='relative flex w-full snap-start snap-always items-center justify-center bg-black overflow-hidden'
+              style={{ height: '100vh', borderRadius: '0 0 0 0' }}
             >
               {/* Video player */}
               {fullVideoUrl ? (
@@ -331,7 +334,8 @@ export default function Minis(): JSX.Element {
                       position: 'absolute',
                       top: 0,
                       left: 0,
-                      backgroundColor: '#000'
+                      backgroundColor: '#000',
+                      borderRadius: '32px'
                     }}
                     onLoadedMetadata={() => {
                       console.log('✅ Video loaded metadata:', index);
