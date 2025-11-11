@@ -13,10 +13,10 @@ import { HeroIcon } from '@components/ui/hero-icon';
 import { UserAvatar } from '@components/user/user-avatar';
 import type { ReactElement, ReactNode } from 'react';
 
-// Get optimized settings based on device
+// Get optimized settings based on device - iOS-style
 const optimizationStrategy = performanceOptimizer.getOptimizedInitStrategy();
 const BATCH_SIZE = optimizationStrategy.prefetchDistance; // Device-adaptive batch size
-const PRELOAD_COUNT = optimizationStrategy.videoPrefetchCount; // Device-adaptive preload
+const PRELOAD_COUNT = 6; // iOS preloads 5-6 videos ahead for instant playback
 
 interface Mini {
   id: string;
@@ -42,9 +42,11 @@ export default function Minis(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(false); // iOS-style: unmuted by default
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [lastVideoId, setLastVideoId] = useState<string | null>(null);
+  const [videoProgress, setVideoProgress] = useState<{ [key: number]: number }>({});
   
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -114,14 +116,30 @@ export default function Minis(): JSX.Element {
     };
   }, []);
 
-  // Preload adjacent videos
+  // iOS-style: Aggressive preloading of 5-6 videos ahead
   const preloadVideo = useCallback((index: number) => {
     const video = videoRefs.current[index];
     if (video && video.readyState < 2) {
       video.load();
-      console.log(`📥 Preloading video ${index}`);
+      console.log(`📥 [iOS-STYLE] Preloading video ${index}`);
     }
   }, []);
+
+  // iOS-style: Preload multiple videos ahead for instant playback
+  const preloadMultipleVideos = useCallback((startIndex: number) => {
+    for (let i = 1; i <= PRELOAD_COUNT; i++) {
+      if (startIndex + i < minis.length) {
+        preloadVideo(startIndex + i);
+      }
+    }
+    // Also preload 2-3 videos behind for reverse scrolling
+    for (let i = 1; i <= 3; i++) {
+      if (startIndex - i >= 0) {
+        preloadVideo(startIndex - i);
+      }
+    }
+    console.log(`🚀 [iOS-STYLE] Preloaded ${PRELOAD_COUNT} videos ahead from index ${startIndex}`);
+  }, [minis.length, preloadVideo]);
 
   // Intersection Observer for precise scroll detection
   useEffect(() => {
@@ -138,19 +156,15 @@ export default function Minis(): JSX.Element {
           const index = parseInt(videoElement.dataset.index || '0');
           
           if (index !== currentIndex) {
-            console.log(`👁️ Video ${index} is now visible`);
+            console.log(`👁️ [iOS-STYLE] Video ${index} is now visible`);
             setCurrentIndex(index);
             
-            // Preload next videos
-            for (let i = 1; i <= PRELOAD_COUNT; i++) {
-              if (index + i < minis.length) {
-                preloadVideo(index + i);
-              }
-            }
+            // iOS-style: Aggressive preloading
+            preloadMultipleVideos(index);
             
-            // Load more when near end
-            if (hasMore && !loadingMore && index >= minis.length - 3) {
-              console.log('📊 Near end, loading more videos...');
+            // Load more when near end (iOS loads 3 batches ahead)
+            if (hasMore && !loadingMore && index >= minis.length - 5) {
+              console.log('📊 [iOS-STYLE] Near end, loading more videos...');
               fetchMinis();
             }
           }
@@ -163,7 +177,7 @@ export default function Minis(): JSX.Element {
         observerRef.current.disconnect();
       }
     };
-  }, [currentIndex, minis.length, hasMore, loadingMore, fetchMinis, preloadVideo]);
+  }, [currentIndex, minis.length, hasMore, loadingMore, fetchMinis, preloadMultipleVideos]);
 
   // Auto-play current video with smooth transition
   useEffect(() => {
@@ -207,6 +221,41 @@ export default function Minis(): JSX.Element {
   }, [currentIndex, minis.length, minis]);
 
   // Removed old scroll handler - using Intersection Observer instead
+
+  // iOS-style: Track video progress for scrubbing bar
+  useEffect(() => {
+    const currentVideo = videoRefs.current[currentIndex];
+    if (!currentVideo) return;
+
+    const handleTimeUpdate = () => {
+      const progress = currentVideo.currentTime / currentVideo.duration;
+      setVideoProgress(prev => ({ ...prev, [currentIndex]: progress }));
+    };
+
+    currentVideo.addEventListener('timeupdate', handleTimeUpdate);
+    
+    return () => {
+      currentVideo.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [currentIndex]);
+
+  // iOS-style: 8 vibrant accent colors that rotate for each video
+  const getAccentColor = (videoId: string): string => {
+    const colorPalette = [
+      '#FF6600', // Orange
+      '#FF3380', // Hot Pink
+      '#8000FF', // Purple
+      '#00B3FF', // Cyan
+      '#00E666', // Mint Green
+      '#FFCC00', // Gold
+      '#FF4D4D', // Coral Red
+      '#4DCCFF'  // Sky Blue
+    ];
+    
+    // Use video ID hash to deterministically pick a color
+    const hash = Math.abs(videoId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0));
+    return colorPalette[hash % colorPalette.length];
+  };
 
   const handleLike = async (miniId: string) => {
     if (!user) return;
@@ -340,7 +389,7 @@ export default function Minis(): JSX.Element {
                     id={`video-${mini.id}`}
                     src={fullVideoUrl}
                     loop
-                    muted
+                    muted={isMuted}
                     playsInline
                     preload={index <= currentIndex + PRELOAD_COUNT ? "auto" : "metadata"}
                     crossOrigin="anonymous"
@@ -413,30 +462,72 @@ export default function Minis(): JSX.Element {
                 </div>
               )}
 
-              {/* Overlay UI */}
-              <div className='absolute inset-0 flex flex-col justify-end p-4'>
+              {/* iOS-style: Avatar in top right corner */}
+              <div className='absolute top-16 right-4 z-20'>
+                <UserAvatar
+                  src={mini.user.avatar_url}
+                  alt={mini.user.full_name}
+                  username={mini.user.username}
+                  size={48}
+                  className='border-2 border-white shadow-lg'
+                />
+              </div>
+
+              {/* iOS-style: Mute/Unmute button in top right (below avatar) */}
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className='absolute top-28 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm transition hover:bg-black/70'
+              >
+                <HeroIcon
+                  className='h-5 w-5 text-white'
+                  iconName={isMuted ? 'SpeakerXMarkIcon' : 'SpeakerWaveIcon'}
+                  solid
+                />
+              </button>
+
+              {/* iOS-style: Bottom overlay with accent bar + caption */}
+              <div className='absolute inset-0 flex flex-col justify-end p-4 pointer-events-none'>
                 <div className='flex items-end justify-between'>
-                  {/* Left side - User info and caption */}
-                  <div className='flex-1 pb-20'>
-                    <div className='flex items-center gap-3 mb-3'>
-                      <UserAvatar
-                        src={mini.user.avatar_url}
-                        alt={mini.user.full_name}
-                        username={mini.user.username}
-                        className='h-12 w-12 border-2 border-white'
+                  {/* iOS-style: Left side - Accent bar + Caption + Username + Join button */}
+                  <div className='flex-1 pb-24 pointer-events-auto'>
+                    <div className='flex items-center gap-3'>
+                      {/* iOS-style: Vertical colored accent bar */}
+                      <div 
+                        className='h-20 w-1 rounded-full'
+                        style={{
+                          background: `linear-gradient(180deg, ${getAccentColor(mini.id)} 0%, transparent 100%)`
+                        }}
                       />
-                      <div>
-                        <p className='font-bold text-white'>{mini.user.full_name}</p>
-                        <p className='text-sm text-white/80'>@{mini.user.username}</p>
+                      
+                      {/* Caption + Username + Join */}
+                      <div className='flex-1'>
+                        {/* Caption (bold, white, iOS-style) */}
+                        {mini.content && (
+                          <p className='text-sm font-bold text-white mb-1 line-clamp-2 drop-shadow-lg'>
+                            {mini.content}
+                          </p>
+                        )}
+                        
+                        {/* Username + Join button */}
+                        <div className='flex items-center gap-2'>
+                          <p className='text-xs text-white/90 drop-shadow-lg'>@{mini.user.username}</p>
+                          
+                          {/* iOS-style: Join button with accent color */}
+                          <button 
+                            className='px-2 py-1 text-xs font-semibold text-white rounded-full'
+                            style={{
+                              backgroundColor: getAccentColor(mini.id)
+                            }}
+                          >
+                            Join •
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    {mini.content && (
-                      <p className='text-white line-clamp-3'>{mini.content}</p>
-                    )}
                   </div>
 
-                  {/* Right side - Action buttons */}
-                  <div className='flex flex-col items-center gap-6 pb-20'>
+                  {/* iOS-style: Right side - Action buttons */}
+                  <div className='flex flex-col items-center gap-6 pb-24 pointer-events-auto'>
                     {/* Like button */}
                     <button
                       onClick={() => handleLike(mini.id)}
@@ -449,7 +540,7 @@ export default function Minis(): JSX.Element {
                           solid={false}
                         />
                       </div>
-                      <span className='text-xs font-semibold text-white'>{mini.likes_count}</span>
+                      <span className='text-xs font-semibold text-white drop-shadow-lg'>{mini.likes_count}</span>
                     </button>
 
                     {/* Comment button */}
@@ -457,7 +548,7 @@ export default function Minis(): JSX.Element {
                       <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
                         <HeroIcon className='h-7 w-7 text-white' iconName='ChatBubbleOvalLeftIcon' />
                       </div>
-                      <span className='text-xs font-semibold text-white'>{mini.comments_count}</span>
+                      <span className='text-xs font-semibold text-white drop-shadow-lg'>{mini.comments_count}</span>
                     </button>
 
                     {/* Share button */}
@@ -465,9 +556,20 @@ export default function Minis(): JSX.Element {
                       <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm'>
                         <HeroIcon className='h-7 w-7 text-white' iconName='PaperAirplaneIcon' />
                       </div>
-                      <span className='text-xs font-semibold text-white'>{mini.shares_count}</span>
+                      <span className='text-xs font-semibold text-white drop-shadow-lg'>{mini.shares_count}</span>
                     </button>
                   </div>
+                </div>
+
+                {/* iOS-style: Video progress bar at bottom */}
+                <div className='absolute bottom-0 left-0 right-0 h-1 bg-white/20'>
+                  <div 
+                    className='h-full bg-white'
+                    style={{
+                      width: `${(videoProgress[index] || 0) * 100}%`,
+                      transition: 'width 0.1s linear'
+                    }}
+                  />
                 </div>
               </div>
             </div>
