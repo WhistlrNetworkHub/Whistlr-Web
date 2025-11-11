@@ -40,7 +40,7 @@ export function Suggestions(): React.ReactElement {
       ) : suggestionsData ? (
         <motion.div className='inner:px-4 inner:py-3' {...variants}>
           <h2 className='text-xl font-bold'>Who to follow</h2>
-          {adminData && <UserCard {...(adminData as any)} />}
+          {adminData ? <UserCard {...(adminData as any)} /> : null}
           {suggestionsData?.map((userData) => (
             <UserCard {...userData} key={userData.id} />
           ))}
