@@ -42,7 +42,7 @@ export function Suggestions(): React.ReactElement {
           <h2 className='text-xl font-bold'>Who to follow</h2>
           {adminData ? <UserCard {...(adminData as any)} /> : null}
           {suggestionsData?.map((userData) => (
-            <UserCard {...userData} key={userData.id} />
+            <UserCard {...(userData as any)} key={userData.id} />
           ))}
           <Link 
             href='/people'
