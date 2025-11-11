@@ -40,8 +40,38 @@
 
   body {
     @apply hover-animation font-twitter-chirp text-light-primary dark:text-dark-primary;
-    /* Dark gradient background */
-    background: linear-gradient(135deg, rgb(0, 0, 0) 0%, rgb(15, 20, 25) 50%, rgb(0, 0, 0) 100%);
+    /* Apple-style gradient background */
+    background: linear-gradient(180deg, 
+      #0a0a0a 0%, 
+      #121212 25%, 
+      #0f0f0f 50%, 
+      #0a0a0a 75%, 
+      #000000 100%
+    );
+    background-attachment: fixed;
+  }
+  
+  /* Apple-style glassmorphism system */
+  .glass-morphism {
+    background: rgba(18, 18, 18, 0.5);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+  
+  .glass-morphism-light {
+    background: rgba(28, 28, 30, 0.4);
+    backdrop-filter: saturate(180%) blur(30px);
+    -webkit-backdrop-filter: saturate(180%) blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .glass-morphism-strong {
+    background: rgba(22, 22, 24, 0.65);
+    backdrop-filter: saturate(200%) blur(40px);
+    -webkit-backdrop-filter: saturate(200%) blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 }
 

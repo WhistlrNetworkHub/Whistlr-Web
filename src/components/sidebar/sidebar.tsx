@@ -106,9 +106,9 @@ export function Sidebar(): JSX.Element {
         <Input modal closeModal={closeModal} />
       </Modal>
       <div
-        className='fixed bottom-0 z-10 flex w-full flex-col justify-between border-t border-light-border 
-                   bg-main-sidebar-background/80 backdrop-blur-md py-0 dark:border-dark-border xs:top-0 xs:h-full xs:w-auto xs:border-0 
-                   xs:bg-main-sidebar-background/60 xs:backdrop-blur-lg xs:px-3 xs:py-6 md:px-4 xl:w-72'
+        className='fixed bottom-0 z-10 flex w-full flex-col justify-between border-t 
+                   glass-morphism-strong py-0 xs:top-0 xs:h-full xs:w-auto xs:border-0 xs:border-r
+                   xs:px-3 xs:py-6 md:px-4 xl:w-72'
       >
         <section className='flex flex-col gap-1 xs:items-start xl:items-stretch'>
           {/* Logo */}
