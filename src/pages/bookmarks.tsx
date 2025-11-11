@@ -134,7 +134,7 @@ export default function Bookmarks(): JSX.Element {
         ) : bookmarkedTweets.length === 0 ? (
           <StatsEmpty
             title='Save Tweets for later'
-            description='Don't let the good ones fly away! Bookmark Tweets to easily find them again in the future.'
+            description="Don't let the good ones fly away! Bookmark Tweets to easily find them again in the future."
             imageData={{ src: '/assets/no-bookmarks.png', alt: 'No bookmarks' }}
           />
         ) : (
