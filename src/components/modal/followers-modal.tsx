@@ -46,14 +46,15 @@ export function FollowersModal({
           console.log('📥 FOLLOWERS: Query SELECT follower_id FROM follows WHERE following_id =', profileId);
           const { data: followData, error } = await supabase
             .from('follows')
-            .select('follower_id')
+            .select('*')
             .eq('following_id', profileId);
 
           console.log('FOLLOWERS Query Result:', followData);
           console.log('FOLLOWERS Query Error:', error);
+          console.log('FOLLOWERS First row sample:', followData?.[0]);
 
           if (followData && followData.length > 0) {
-            const followerIds = followData.map((f) => f.follower_id);
+            const followerIds = followData.map((f) => f.follower_id).filter(id => id);
             console.log('FOLLOWERS: Raw follow data:', followData);
             console.log('FOLLOWERS: Extracted follower IDs:', followerIds);
             console.log('FOLLOWERS: ID types:', followerIds.map(id => typeof id));
