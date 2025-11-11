@@ -98,7 +98,7 @@ export default function TweetId(): JSX.Element {
             ) : commentsData && commentsData.length > 0 ? (
               <AnimatePresence mode='popLayout'>
                 {commentsData.map((comment) => (
-                  <Tweet {...comment} key={comment.id} />
+                  <Tweet {...comment} key={comment.id} modal />
                 ))}
               </AnimatePresence>
             ) : (
