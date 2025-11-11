@@ -173,8 +173,38 @@ class VideoManager {
     });
     
     video.addEventListener('error', (e) => {
-      console.error(`❌ [VIDEO-MANAGER] Player error for: ${videoId}`, e);
-      this.disposePlayer(videoId);
+      const target = e.target as HTMLVideoElement;
+      const error = target.error;
+      
+      let errorMessage = 'Unknown error';
+      if (error) {
+        switch (error.code) {
+          case MediaError.MEDIA_ERR_ABORTED:
+            errorMessage = 'Playback aborted by user';
+            break;
+          case MediaError.MEDIA_ERR_NETWORK:
+            errorMessage = 'Network error - failed to download video';
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            errorMessage = 'Decode error - video format not supported';
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            errorMessage = 'Source not supported - invalid video URL or format';
+            break;
+          default:
+            errorMessage = error.message || 'Unknown error';
+        }
+      }
+      
+      console.error(`❌ [VIDEO-MANAGER] Player error for: ${videoId}`);
+      console.error(`   Error Code: ${error?.code}`);
+      console.error(`   Error Message: ${errorMessage}`);
+      console.error(`   Video URL: ${video.src}`);
+      console.error(`   Network State: ${target.networkState}`);
+      console.error(`   Ready State: ${target.readyState}`);
+      
+      // Don't dispose immediately - might recover
+      // this.disposePlayer(videoId);
     });
     
     video.addEventListener('ended', () => {

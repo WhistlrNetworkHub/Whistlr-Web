@@ -239,10 +239,10 @@ export default function Minis(): JSX.Element {
         </div>
       ) : (
         <div className='relative' style={{ height: '100vh' }}>
-          {/* Floating Title */}
-          <div className='absolute top-8 left-0 right-0 z-50 flex items-center justify-center pointer-events-none'>
-            <h1 className='text-white text-2xl font-bold tracking-wider uppercase drop-shadow-lg'>
-              MINIS
+          {/* Floating Title - Instagram Style */}
+          <div className='absolute top-6 left-6 z-50 pointer-events-none'>
+            <h1 className='text-white text-3xl font-semibold tracking-tight' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
+              Minis
             </h1>
           </div>
           
