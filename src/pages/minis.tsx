@@ -165,20 +165,41 @@ export default function Minis(): JSX.Element {
     };
   }, [currentIndex, minis.length, hasMore, loadingMore, fetchMinis, preloadVideo]);
 
-  // Auto-play current video with smooth transition using VideoManager
+  // Auto-play current video with smooth transition
   useEffect(() => {
-    if (minis.length > 0 && currentIndex >= 0) {
-      const currentMini = minis[currentIndex];
-      if (!currentMini) return;
-      
-      // Track video play for performance monitoring
-      performanceOptimizer.trackVideoPlay();
-      
-      // Use VideoManager for centralized playback control
+    if (minis.length === 0 || currentIndex < 0) return;
+    
+    const currentMini = minis[currentIndex];
+    if (!currentMini) return;
+    
+    // Pause all other videos first
+    videoRefs.current.forEach((video, idx) => {
+      if (video && idx !== currentIndex && !video.paused) {
+        video.pause();
+        console.log(`⏸️ Paused video ${idx}`);
+      }
+    });
+    
+    // Track video play for performance monitoring
+    performanceOptimizer.trackVideoPlay();
+    
+    // Play current video
+    const currentVideo = videoRefs.current[currentIndex];
+    if (currentVideo) {
       const timer = setTimeout(() => {
-        videoManager.playVideo(currentMini.id);
-        setIsPlaying(true);
-        playingRef.current = currentIndex;
+        currentVideo.play()
+          .then(() => {
+            console.log(`▶️ Playing video ${currentIndex}`);
+            setIsPlaying(true);
+            playingRef.current = currentIndex;
+          })
+          .catch(err => {
+            console.error(`❌ Error playing video ${currentIndex}:`, err);
+            // Try again after a short delay
+            setTimeout(() => {
+              currentVideo.play().catch(e => console.error('Retry failed:', e));
+            }, 500);
+          });
       }, 150);
 
       return () => clearTimeout(timer);
@@ -298,10 +319,10 @@ export default function Minis(): JSX.Element {
                   className='relative h-full w-full'
                   onClick={() => {
                     if (index === currentIndex) {
-                      const video = document.getElementById(`video-${index}`) as HTMLVideoElement;
+                      const video = videoRefs.current[index];
                       if (video) {
                         if (video.paused) {
-                          video.play();
+                          video.play().catch(e => console.error('Play error:', e));
                           setIsPlaying(true);
                         } else {
                           video.pause();
@@ -311,16 +332,10 @@ export default function Minis(): JSX.Element {
                     }
                   }}
                 >
-                  {/* Using native HTML5 video with VideoManager integration */}
+                  {/* Using native HTML5 video */}
                   <video
                     ref={(el) => {
                       videoRefs.current[index] = el;
-                      // Register with VideoManager
-                      if (el && fullVideoUrl) {
-                        const managedVideo = videoManager.getPlayer(mini.id, fullVideoUrl);
-                        // Copy managed video attributes to our ref
-                        videoRefs.current[index] = managedVideo;
-                      }
                     }}
                     id={`video-${mini.id}`}
                     src={fullVideoUrl}
@@ -329,6 +344,7 @@ export default function Minis(): JSX.Element {
                     playsInline
                     preload={index <= currentIndex + PRELOAD_COUNT ? "auto" : "metadata"}
                     crossOrigin="anonymous"
+                    autoPlay={index === 0}
                     className='h-full w-full object-cover'
                     style={{
                       position: 'absolute',
@@ -338,8 +354,15 @@ export default function Minis(): JSX.Element {
                     }}
                     onLoadedMetadata={() => {
                       console.log('✅ Video loaded metadata:', index);
-                      const video = document.getElementById(`video-${index}`) as HTMLVideoElement;
+                      const video = videoRefs.current[index];
                       if (video && index === currentIndex) {
+                        video.play().catch(e => console.error('Play error:', e));
+                      }
+                    }}
+                    onCanPlay={() => {
+                      console.log('✅ Video can play:', index);
+                      const video = videoRefs.current[index];
+                      if (video && index === currentIndex && video.paused) {
                         video.play().catch(e => console.error('Play error:', e));
                       }
                     }}
