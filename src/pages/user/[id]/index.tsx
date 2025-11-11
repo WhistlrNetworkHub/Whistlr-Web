@@ -210,11 +210,22 @@ export default function UserProfile(): JSX.Element {
 
       <FollowersModal
         open={followModalOpen}
-        closeModal={closeFollowModal}
+        closeModal={() => {
+          console.log('🚪 Closing modal');
+          closeFollowModal();
+        }}
         profileId={profile.id}
         type={modalType}
         username={profile.username}
       />
+      {/* Debug modal state */}
+      {followModalOpen && (
+        <div style={{ position: 'fixed', top: 10, right: 10, background: 'black', color: 'white', padding: '10px', zIndex: 9999, fontSize: '12px', fontFamily: 'monospace' }}>
+          Modal Type: <strong>{modalType}</strong><br />
+          Profile ID: {profile.id}<br />
+          Username: {profile.username}
+        </div>
+      )}
 
       {/* iOS-Style Profile Header with Cover Banner */}
       <div className='relative'>
@@ -324,6 +335,7 @@ export default function UserProfile(): JSX.Element {
             <button 
               className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'
               onClick={() => {
+                console.log('🔵 FOLLOWERS button clicked - setting modalType to followers');
                 setModalType('followers');
                 openFollowModal();
               }}
@@ -354,6 +366,7 @@ export default function UserProfile(): JSX.Element {
             <button 
               className='flex-1 p-4 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 transition-all'
               onClick={() => {
+                console.log('🟢 FOLLOWING button clicked - setting modalType to following');
                 setModalType('following');
                 openFollowModal();
               }}
