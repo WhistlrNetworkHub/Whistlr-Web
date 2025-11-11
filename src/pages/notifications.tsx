@@ -24,7 +24,7 @@ interface Notification {
   };
 }
 
-export default function Notifications(): JSX.Element {
+export default function Notifications(): React.ReactElement {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);

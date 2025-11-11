@@ -17,7 +17,7 @@ import { HeroIcon } from '@components/ui/hero-icon';
 import { FollowersModal } from '@components/modal/followers-modal';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function UserProfile(): JSX.Element {
+export default function UserProfile(): React.ReactElement {
   const router = useRouter();
   const { id } = router.query;
   const { user: currentUser } = useAuth();

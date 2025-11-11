@@ -46,7 +46,7 @@ export function Input({
   children,
   replyModal,
   closeModal
-}: InputProps): JSX.Element {
+}: InputProps): React.ReactElement {
   const [selectedImages, setSelectedImages] = useState<FilesWithId>([]);
   const [imagesPreview, setImagesPreview] = useState<ImagesPreview>([]);
   const [inputValue, setInputValue] = useState('');
@@ -323,6 +323,6 @@ function Button({
 }: {
   children: ReactNode;
   [key: string]: any;
-}): JSX.Element {
+}): React.ReactElement {
   return <button {...rest}>{children}</button>;
 }

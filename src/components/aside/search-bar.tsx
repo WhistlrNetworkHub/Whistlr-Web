@@ -5,7 +5,7 @@ import { HeroIcon } from '@components/ui/hero-icon';
 import { Button } from '@components/ui/button';
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 
-export function SearchBar(): JSX.Element {
+export function SearchBar(): React.ReactElement {
   const [inputValue, setInputValue] = useState('');
 
   const { push } = useRouter();

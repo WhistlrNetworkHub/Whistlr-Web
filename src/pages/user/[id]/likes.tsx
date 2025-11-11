@@ -13,7 +13,7 @@ import { StatsEmpty } from '@components/whistle/stats-empty';
 import type { ReactElement, ReactNode } from 'react';
 import type { Tweet as TweetType } from '@lib/types/whistle';
 
-export default function UserLikes(): JSX.Element {
+export default function UserLikes(): React.ReactElement {
   const { user } = useUser();
   const [likedPosts, setLikedPosts] = useState<TweetType[]>([]);
   const [loading, setLoading] = useState(true);

@@ -13,7 +13,7 @@ import { Loading } from '@components/ui/loading';
 import { StatsEmpty } from '@components/whistle/stats-empty';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function UserWithReplies(): JSX.Element {
+export default function UserWithReplies(): React.ReactElement {
   const { user } = useUser();
 
   const { id, full_name, username, pinned_post_id } = user ?? {};

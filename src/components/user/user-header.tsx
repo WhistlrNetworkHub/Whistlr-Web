@@ -13,7 +13,7 @@ export const variants: Variants = {
   exit: { opacity: 0, transition: { duration: 0.2 } }
 };
 
-export function UserHeader(): JSX.Element {
+export function UserHeader(): React.ReactElement {
   const {
     pathname,
     query: { id }

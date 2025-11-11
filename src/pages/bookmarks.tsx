@@ -21,7 +21,7 @@ import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 import type { Tweet as TweetType } from '@lib/types/whistle';
 
-export default function Bookmarks(): JSX.Element {
+export default function Bookmarks(): React.ReactElement {
   const { user } = useAuth();
   const { open, openModal, closeModal } = useModal();
 

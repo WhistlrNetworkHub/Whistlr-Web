@@ -12,7 +12,7 @@ export function NumberStats({
   move,
   stats,
   alwaysShowStats
-}: NumberStatsProps): JSX.Element {
+}: NumberStatsProps): React.ReactElement {
   return (
     <div className='overflow-hidden'>
       <AnimatePresence mode='wait' initial={false}>

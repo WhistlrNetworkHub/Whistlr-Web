@@ -34,7 +34,7 @@ export function UserDetails({
   createdAt,
   following_count,
   followers_count
-}: UserDetailsProps): JSX.Element {
+}: UserDetailsProps): React.ReactElement {
   const detailIcons: Readonly<DetailIcon[]> = [
     [location, 'MapPinIcon'],
     [website, 'LinkIcon'],

@@ -13,7 +13,7 @@ type ViewParentWhistleProps = {
 export function ViewParentTweet({
   parentId,
   viewWhistleRef
-}: ViewParentWhistleProps): JSX.Element | null {
+}: ViewParentWhistleProps): React.ReactElement | null {
   const { data, loading } = useDocument(doc(whistlesCollection, parentId), {
     includeUser: true,
     allowNull: true

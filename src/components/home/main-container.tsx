@@ -9,7 +9,7 @@ type MainContainerProps = {
 export function MainContainer({
   children,
   className
-}: MainContainerProps): JSX.Element {
+}: MainContainerProps): React.ReactElement {
   return (
     <main
       className={cn(

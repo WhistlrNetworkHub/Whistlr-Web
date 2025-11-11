@@ -9,7 +9,7 @@ import { MainContainer } from '@components/home/main-container';
 import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function Inbox(): JSX.Element {
+export default function Inbox(): React.ReactElement {
   const { user } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

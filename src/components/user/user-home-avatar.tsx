@@ -11,7 +11,7 @@ type UserHomeAvatarProps = {
 
 export function UserHomeAvatar({
   profileData
-}: UserHomeAvatarProps): JSX.Element {
+}: UserHomeAvatarProps): React.ReactElement {
   const { open, openModal, closeModal } = useModal();
 
   return (

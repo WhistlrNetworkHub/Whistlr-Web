@@ -9,7 +9,7 @@ const footerLinks = [
   ]
 ] as const;
 
-export function AsideFooter(): JSX.Element {
+export function AsideFooter(): React.ReactElement {
   return (
     <footer
       className='sticky top-16 flex flex-col gap-3 text-center text-sm 

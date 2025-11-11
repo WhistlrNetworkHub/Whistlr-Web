@@ -14,7 +14,7 @@ type FollowButtonProps = {
 export function FollowButton({
   userTargetId,
   userTargetUsername
-}: FollowButtonProps): JSX.Element | null {
+}: FollowButtonProps): React.ReactElement | null {
   const { user } = useAuth();
   const { open, openModal, closeModal } = useModal();
 

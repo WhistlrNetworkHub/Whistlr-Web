@@ -8,7 +8,7 @@ import { MainContainer } from '@components/home/main-container';
 import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function News(): JSX.Element {
+export default function News(): React.ReactElement {
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

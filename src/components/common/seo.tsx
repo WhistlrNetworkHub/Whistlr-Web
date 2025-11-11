@@ -12,7 +12,7 @@ export function SEO({
   title,
   image,
   description
-}: MainLayoutProps): JSX.Element {
+}: MainLayoutProps): React.ReactElement {
   const { asPath } = useRouter();
 
   return (

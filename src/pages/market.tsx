@@ -8,7 +8,7 @@ import { MainContainer } from '@components/home/main-container';
 import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function Market(): JSX.Element {
+export default function Market(): React.ReactElement {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

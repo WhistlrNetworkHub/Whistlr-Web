@@ -6,7 +6,7 @@ import { BackgroundCarousel } from './background-carousel';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
-export function LoginMain(): JSX.Element {
+export function LoginMain(): React.ReactElement {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);

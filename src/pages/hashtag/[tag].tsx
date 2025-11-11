@@ -11,7 +11,7 @@ import { Loading } from '@components/ui/loading';
 import { Error } from '@components/ui/error';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function HashtagPage(): JSX.Element {
+export default function HashtagPage(): React.ReactElement {
   const router = useRouter();
   const { tag } = router.query;
 

@@ -7,7 +7,7 @@ type AsideProps = {
   children: ReactNode;
 };
 
-export function Aside({ children }: AsideProps): JSX.Element | null {
+export function Aside({ children }: AsideProps): React.ReactElement | null {
   const { width } = useWindow();
 
   if (width < 1024) return null;

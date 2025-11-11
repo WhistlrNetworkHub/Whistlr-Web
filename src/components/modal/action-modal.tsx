@@ -28,7 +28,7 @@ export function ActionModal({
   secondaryBtnClassName,
   action,
   closeModal
-}: ActionModalProps): JSX.Element {
+}: ActionModalProps): React.ReactElement {
   const mainBtn = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {

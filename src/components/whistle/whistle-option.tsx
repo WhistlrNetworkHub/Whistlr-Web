@@ -27,7 +27,7 @@ export function WhistleOption({
   viewWhistle,
   iconClassName,
   onClick
-}: WhistleOption): JSX.Element {
+}: WhistleOption): React.ReactElement {
   return (
     <button
       className={cn(

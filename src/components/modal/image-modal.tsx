@@ -33,7 +33,7 @@ export function ImageModal({
   previewCount,
   selectedIndex,
   handleNextIndex
-}: ImageModalProps): JSX.Element {
+}: ImageModalProps): React.ReactElement {
   const [indexes, setIndexes] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 

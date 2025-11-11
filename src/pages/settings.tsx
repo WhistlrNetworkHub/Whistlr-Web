@@ -13,7 +13,7 @@ const settingsLinks = [
   { href: '/settings/notifications', title: 'Notifications', description: 'Manage notification preferences', icon: 'BellIcon' }
 ];
 
-export default function Settings(): JSX.Element {
+export default function Settings(): React.ReactElement {
   return (
     <MainContainer>
       <SEO title='Settings / Whistlr' />

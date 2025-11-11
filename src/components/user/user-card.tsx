@@ -12,7 +12,7 @@ type UserCardProps = User & {
   follow?: boolean;
 };
 
-export function UserCard(user: UserCardProps): JSX.Element {
+export function UserCard(user: UserCardProps): React.ReactElement {
   const { id, bio, full_name, modal, follow, username, is_verified, avatar_url } = user;
   
   // Legacy compatibility

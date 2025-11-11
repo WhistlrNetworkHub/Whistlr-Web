@@ -27,7 +27,7 @@ export function InputField({
   errorMessage,
   handleChange,
   handleKeyboardShortcut
-}: InputFieldProps): JSX.Element {
+}: InputFieldProps): React.ReactElement {
   const slicedInputValue = inputValue?.slice(0, inputLimit) ?? '';
 
   const inputLength = slicedInputValue.length;

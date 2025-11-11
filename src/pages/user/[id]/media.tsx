@@ -12,7 +12,7 @@ import { Loading } from '@components/ui/loading';
 import { StatsEmpty } from '@components/whistle/stats-empty';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function UserMedia(): JSX.Element {
+export default function UserMedia(): React.ReactElement {
   const { user } = useUser();
 
   const { id, full_name, username } = user ?? {};

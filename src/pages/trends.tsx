@@ -13,7 +13,7 @@ import { ToolTip } from '@components/ui/tooltip';
 import { HeroIcon } from '@components/ui/hero-icon';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function Bookmarks(): JSX.Element {
+export default function Bookmarks(): React.ReactElement {
   const { back } = useRouter();
 
   return (

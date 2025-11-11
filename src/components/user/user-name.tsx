@@ -18,7 +18,7 @@ export function UserName({
   username,
   className,
   iconClassName
-}: UserNameProps): JSX.Element {
+}: UserNameProps): React.ReactElement {
   const CustomTag = tag ? tag : 'p';
 
   return (

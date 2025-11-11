@@ -12,7 +12,7 @@ export function WhistleStatsModal({
   children,
   statsType,
   handleClose
-}: WhistleStatsModalProps): JSX.Element {
+}: WhistleStatsModalProps): React.ReactElement {
   return (
     <>
       <MainHeader

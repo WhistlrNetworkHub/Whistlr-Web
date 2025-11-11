@@ -31,7 +31,7 @@ export function NextImage({
   previewCount,
   blurClassName,
   ...rest
-}: NextImageProps): JSX.Element {
+}: NextImageProps): React.ReactElement {
   const [loading, setLoading] = useState(!!useSkeleton);
 
   const handleLoad = (): void => setLoading(false);

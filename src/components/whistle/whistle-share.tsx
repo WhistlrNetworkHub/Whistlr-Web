@@ -32,7 +32,7 @@ export function WhistleShare({
   userId,
   whistleId,
   viewWhistle
-}: WhistleShareProps): JSX.Element {
+}: WhistleShareProps): React.ReactElement {
   const { userBookmarks } = useAuth();
 
   const handleBookmark =
@@ -45,7 +45,7 @@ export function WhistleShare({
 
       toast.success(
         type === 'bookmark'
-          ? (): JSX.Element => (
+          ? (): React.ReactElement => (
               <span className='flex gap-2'>
                 Whistle added to your Bookmarks
                 <Link href='/bookmarks' className='custom-underline font-bold'>
@@ -67,7 +67,7 @@ export function WhistleShare({
 
   return (
     <Popover className='relative'>
-      {({ open, close }): JSX.Element => (
+      {({ open, close }): React.ReactElement => (
         <>
           <Popover.Button
             className={cn(

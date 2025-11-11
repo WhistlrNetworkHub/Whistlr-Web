@@ -9,7 +9,7 @@ type WhistleWithParentProps = {
 
 export type LoadedParents = Record<'parentId' | 'childId', string>[];
 
-export function WhistleWithParent({ data }: WhistleWithParentProps): JSX.Element {
+export function WhistleWithParent({ data }: WhistleWithParentProps): React.ReactElement {
   const [loadedParents, setLoadedParents] = useState<LoadedParents>([]);
 
   const addParentId = (parentId: string, targetChildId: string): void =>

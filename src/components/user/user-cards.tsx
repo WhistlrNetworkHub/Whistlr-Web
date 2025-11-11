@@ -51,7 +51,7 @@ export function UserCards({
   type,
   follow,
   loading
-}: UserCardsProps): JSX.Element {
+}: UserCardsProps): React.ReactElement {
   const noStatsData = allNoStatsData[type];
   const modal = ['retweets', 'likes'].includes(type);
 

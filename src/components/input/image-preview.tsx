@@ -46,7 +46,7 @@ export function ImagePreview({
   previewCount,
   imagesPreview,
   removeImage
-}: ImagePreviewProps): JSX.Element {
+}: ImagePreviewProps): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
 

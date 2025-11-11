@@ -14,7 +14,7 @@ import { UserUsername } from '@components/user/user-username';
 import { variants } from './more-settings';
 import type { User } from '@lib/types/user';
 
-export function SidebarProfile(): JSX.Element {
+export function SidebarProfile(): React.ReactElement {
   const { user, signOut } = useAuth();
   const { open, openModal, closeModal } = useModal();
 
@@ -43,7 +43,7 @@ export function SidebarProfile(): JSX.Element {
         />
       </Modal>
       <Menu className='relative' as='section'>
-        {({ open }): JSX.Element => (
+        {({ open }): React.ReactElement => (
           <>
             <Menu.Button
               className={cn(
@@ -94,7 +94,7 @@ export function SidebarProfile(): JSX.Element {
                     </i>
                   </Menu.Item>
                   <Menu.Item>
-                    {({ active }): JSX.Element => (
+                    {({ active }): React.ReactElement => (
                       <Button
                         className={cn(
                           'flex w-full gap-3 rounded-md rounded-t-none p-4',

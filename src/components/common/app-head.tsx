@@ -1,6 +1,6 @@
 import Head from 'next/head';
 
-export function AppHead(): JSX.Element {
+export function AppHead(): React.ReactElement {
   return (
     <Head>
       <title>Whistlr</title>

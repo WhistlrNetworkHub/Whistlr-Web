@@ -38,7 +38,7 @@ interface AuthContextProviderProps {
   children: ReactNode;
 }
 
-export function AuthContextProvider({ children }: AuthContextProviderProps): JSX.Element {
+export function AuthContextProvider({ children }: AuthContextProviderProps): React.ReactElement {
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userBookmarks, setUserBookmarks] = useState<Bookmark[]>([]);

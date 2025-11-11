@@ -10,7 +10,7 @@ type UserFollowProps = {
   type: 'following' | 'followers';
 };
 
-export function UserFollow({ type }: UserFollowProps): JSX.Element {
+export function UserFollow({ type }: UserFollowProps): React.ReactElement {
   const { user } = useUser();
   const { name, username } = user as User;
 

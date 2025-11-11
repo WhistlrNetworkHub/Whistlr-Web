@@ -35,7 +35,7 @@ export function FollowersModal({
   profileId,
   type,
   username
-}: FollowersModalProps): JSX.Element {
+}: FollowersModalProps): React.ReactElement {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -332,7 +332,7 @@ export function FollowersModal({
   profileId,
   type,
   username
-}: FollowersModalProps): JSX.Element {
+}: FollowersModalProps): React.ReactElement {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

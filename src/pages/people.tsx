@@ -18,7 +18,7 @@ import { Error } from '@components/ui/error';
 import { variants } from '@components/aside/aside-trends';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function People(): JSX.Element {
+export default function People(): React.ReactElement {
   const { user } = useAuth();
 
   const { data, loading, LoadMore } = useInfiniteScroll(

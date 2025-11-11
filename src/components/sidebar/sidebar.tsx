@@ -83,7 +83,7 @@ const navLinks: Readonly<NavLink[]> = [
   }
 ];
 
-export function Sidebar(): JSX.Element {
+export function Sidebar(): React.ReactElement {
   const { user } = useAuth();
   const { isMobile } = useWindow();
 

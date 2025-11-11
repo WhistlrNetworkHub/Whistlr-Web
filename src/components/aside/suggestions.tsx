@@ -14,7 +14,7 @@ const variants: Variants = {
   animate: { opacity: 1, transition: { duration: 0.8 } }
 };
 
-export function Suggestions(): JSX.Element {
+export function Suggestions(): React.ReactElement {
   const { randomSeed } = useAuth();
 
   // Fetch admin/featured user (you can replace this ID with your actual admin user ID)

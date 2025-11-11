@@ -8,7 +8,7 @@ import { MainContainer } from '@components/home/main-container';
 import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function Flow(): JSX.Element {
+export default function Flow(): React.ReactElement {
   const [streams, setStreams] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

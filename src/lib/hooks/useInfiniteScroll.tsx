@@ -182,7 +182,7 @@ export function useInfiniteScroll<T>(
     };
   }, [tableName, fetchData, fetchOptions?.disabled]);
 
-  const LoadMore = (): JSX.Element => (
+  const LoadMore = (): React.ReactElement => (
     <motion.button
       type='button'
       className='hover-animation mt-3 flex h-12 w-full items-center

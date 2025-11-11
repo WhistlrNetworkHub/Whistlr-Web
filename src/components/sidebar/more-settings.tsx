@@ -20,7 +20,7 @@ export const variants: Variants = {
   exit: { opacity: 0, y: 50, transition: { duration: 0.2 } }
 };
 
-export function MoreSettings(): JSX.Element {
+export function MoreSettings(): React.ReactElement {
   const { open, openModal, closeModal } = useModal();
 
   return (
@@ -33,7 +33,7 @@ export function MoreSettings(): JSX.Element {
         <DisplayModal closeModal={closeModal} />
       </Modal>
       <Menu className='relative' as='div'>
-        {({ open }): JSX.Element => (
+        {({ open }): React.ReactElement => (
           <>
             <Menu.Button className='group relative flex w-full py-1 outline-none'>
               <div
@@ -60,7 +60,7 @@ export function MoreSettings(): JSX.Element {
                   static
                 >
                   <Menu.Item>
-                    {({ active }): JSX.Element => (
+                    {({ active }): React.ReactElement => (
                       <MenuLink
                         className={cn(
                           'flex w-full cursor-not-allowed gap-3 rounded-t-md p-4 duration-200',
@@ -75,7 +75,7 @@ export function MoreSettings(): JSX.Element {
                     )}
                   </Menu.Item>
                   <Menu.Item>
-                    {({ active }): JSX.Element => (
+                    {({ active }): React.ReactElement => (
                       <MenuLink
                         className={cn(
                           'flex w-full cursor-not-allowed gap-3 rounded-t-md p-4 duration-200',
@@ -90,7 +90,7 @@ export function MoreSettings(): JSX.Element {
                     )}
                   </Menu.Item>
                   <Menu.Item>
-                    {({ active }): JSX.Element => (
+                    {({ active }): React.ReactElement => (
                       <Button
                         className={cn(
                           'flex w-full gap-3 rounded-none rounded-b-md p-4 duration-200',

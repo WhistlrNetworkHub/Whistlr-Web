@@ -16,7 +16,7 @@ export function WhistleParent({
   parentId,
   loadedParents,
   addParentId
-}: WhistleParentProps): JSX.Element | null {
+}: WhistleParentProps): React.ReactElement | null {
   const componentId = useMemo(getRandomId, []);
 
   const isParentAlreadyLoaded = loadedParents.some(

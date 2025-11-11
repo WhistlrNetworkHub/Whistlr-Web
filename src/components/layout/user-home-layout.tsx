@@ -17,7 +17,7 @@ import { UserEditProfile } from '@components/user/user-edit-profile';
 import { UserShare } from '@components/user/user-share';
 import type { LayoutProps } from './common-layout';
 
-export function UserHomeLayout({ children }: LayoutProps): JSX.Element {
+export function UserHomeLayout({ children }: LayoutProps): React.ReactElement {
   const { user, isAdmin } = useAuth();
   const { user: userData, loading } = useUser();
 

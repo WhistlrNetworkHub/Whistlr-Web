@@ -14,7 +14,7 @@ export function StatsEmpty({
   modal,
   imageData,
   description
-}: StatsEmptyProps): JSX.Element {
+}: StatsEmptyProps): React.ReactElement {
   return (
     <div className={cn('flex justify-center p-8', modal && 'mt-[52px]')}>
       <div className='w-full max-w-sm'>

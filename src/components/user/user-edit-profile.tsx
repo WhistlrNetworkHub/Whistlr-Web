@@ -33,7 +33,7 @@ type UserEditProfileProps = {
   hide?: boolean;
 };
 
-export function UserEditProfile({ hide }: UserEditProfileProps): JSX.Element {
+export function UserEditProfile({ hide }: UserEditProfileProps): React.ReactElement {
   const { user } = useUser();
   const { open, openModal, closeModal } = useModal();
 

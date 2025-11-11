@@ -10,7 +10,7 @@ type WhistleReplyModalProps = {
 export function WhistleReplyModal({
   tweet,
   closeModal
-}: WhistleReplyModalProps): JSX.Element {
+}: WhistleReplyModalProps): React.ReactElement {
   return (
     <Input
       modal

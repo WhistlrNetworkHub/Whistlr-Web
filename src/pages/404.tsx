@@ -2,7 +2,7 @@ import Error from 'next/error';
 import { useTheme } from '@lib/context/theme-context';
 import { SEO } from '@components/common/seo';
 
-export default function NotFound(): JSX.Element {
+export default function NotFound(): React.ReactElement {
   const { theme } = useTheme();
 
   const isDarkMode = ['dim', 'dark'].includes(theme);

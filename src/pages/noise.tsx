@@ -10,7 +10,7 @@ import { Loading } from '@components/ui/loading';
 import { Error } from '@components/ui/error';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function Noise(): JSX.Element {
+export default function Noise(): React.ReactElement {
   const { data, loading, LoadMore } = useInfiniteScroll(
     'posts',
     {

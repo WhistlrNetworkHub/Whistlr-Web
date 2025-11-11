@@ -22,7 +22,7 @@ type UserShareProps = {
   username: string;
 };
 
-export function UserShare({ username }: UserShareProps): JSX.Element {
+export function UserShare({ username }: UserShareProps): React.ReactElement {
   const handleCopy = (closeMenu: () => void) => async (): Promise<void> => {
     closeMenu();
     await navigator.clipboard.writeText(`${siteURL}/user/${username}`);
@@ -31,7 +31,7 @@ export function UserShare({ username }: UserShareProps): JSX.Element {
 
   return (
     <Popover className='relative'>
-      {({ open, close }): JSX.Element => (
+      {({ open, close }): React.ReactElement => (
         <>
           <Popover.Button
             as={Button}

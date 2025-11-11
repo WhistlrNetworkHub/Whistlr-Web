@@ -33,7 +33,7 @@ export const variants: Variants = {
   exit: { opacity: 0, transition: { duration: 0.2 } }
 };
 
-export function Whistle(whistleData: WhistleProps): JSX.Element {
+export function Whistle(whistleData: WhistleProps): React.ReactElement {
   const {
     id: whistleId,
     content,

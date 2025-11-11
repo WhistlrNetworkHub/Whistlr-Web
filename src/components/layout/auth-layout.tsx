@@ -5,7 +5,7 @@ import { sleep } from '@lib/utils';
 import { Placeholder } from '@components/common/placeholder';
 import type { LayoutProps } from './common-layout';
 
-export function AuthLayout({ children }: LayoutProps): JSX.Element {
+export function AuthLayout({ children }: LayoutProps): React.ReactElement {
   const [pending, setPending] = useState(true);
 
   const { user, loading } = useAuth();

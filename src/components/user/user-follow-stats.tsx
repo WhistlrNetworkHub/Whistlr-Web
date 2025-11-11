@@ -14,7 +14,7 @@ type Stats = [string, string, number, number];
 export function UserFollowStats({
   following_count,
   followers_count
-}: UserFollowStatsProps): JSX.Element {
+}: UserFollowStatsProps): React.ReactElement {
   const totalFollowing = following_count || 0;
   const totalFollowers = followers_count || 0;
 

@@ -17,7 +17,7 @@ type UserContextProviderProps = {
 export function UserContextProvider({
   value,
   children
-}: UserContextProviderProps): JSX.Element {
+}: UserContextProviderProps): React.ReactElement {
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 

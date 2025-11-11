@@ -16,7 +16,7 @@ import { Whistle } from '@components/whistle/whistle';
 import { Input } from '@components/input/input';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function WhistleId(): JSX.Element {
+export default function WhistleId(): React.ReactElement {
   const {
     query: { id },
     back

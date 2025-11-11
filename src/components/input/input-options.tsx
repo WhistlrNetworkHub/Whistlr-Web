@@ -68,7 +68,7 @@ export function InputOptions({
   isValidWhistle,
   isCharLimitExceeded,
   handleImageUpload
-}: InputOptionsProps): JSX.Element {
+}: InputOptionsProps): React.ReactElement {
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const onClick = (): void => inputFileRef.current?.click();

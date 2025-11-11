@@ -11,7 +11,7 @@ export function UserUsername({
   username,
   className,
   disableLink
-}: UserUsernameProps): JSX.Element {
+}: UserUsernameProps): React.ReactElement {
   return (
     <Link 
       href={`/user/${username}`}

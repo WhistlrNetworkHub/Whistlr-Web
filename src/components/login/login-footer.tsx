@@ -20,7 +20,7 @@ const footerLinks = [
   ['Settings', 'https://whistlr.com/settings']
 ] as const;
 
-export function LoginFooter(): JSX.Element {
+export function LoginFooter(): React.ReactElement {
   return (
     <footer className='hidden justify-center p-4 text-sm text-light-secondary dark:text-dark-secondary lg:flex'>
       <nav className='flex flex-wrap justify-center gap-4 gap-y-2'>

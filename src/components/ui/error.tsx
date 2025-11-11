@@ -4,7 +4,7 @@ type ErrorProps = {
   message?: string;
 };
 
-export function Error({ message }: ErrorProps): JSX.Element {
+export function Error({ message }: ErrorProps): React.ReactElement {
   return (
     <div
       className='flex flex-col items-center justify-center 

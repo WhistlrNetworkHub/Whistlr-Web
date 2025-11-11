@@ -15,7 +15,7 @@ const toastOptions: DefaultToastOptions = {
   success: { duration: 4000 }
 };
 
-export function MainLayout({ children }: LayoutProps): JSX.Element {
+export function MainLayout({ children }: LayoutProps): React.ReactElement {
   return (
     <div className='flex w-full justify-center gap-0 lg:gap-4'>
       <WindowContextProvider>

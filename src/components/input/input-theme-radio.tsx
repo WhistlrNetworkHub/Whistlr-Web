@@ -45,7 +45,7 @@ const inputThemeData: Readonly<InputThemeData> = {
 export function InputThemeRadio({
   type,
   label
-}: InputThemeRadioProps): JSX.Element {
+}: InputThemeRadioProps): React.ReactElement {
   const { theme, changeTheme } = useTheme();
 
   const { textColor, backgroundColor, iconBorderColor, hoverBackgroundColor } =

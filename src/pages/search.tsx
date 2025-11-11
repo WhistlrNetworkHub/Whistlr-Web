@@ -31,7 +31,7 @@ interface SearchPost {
   };
 }
 
-export default function Search(): JSX.Element {
+export default function Search(): React.ReactElement {
   const router = useRouter();
   const { q } = router.query;
   const searchQuery = typeof q === 'string' ? q : '';

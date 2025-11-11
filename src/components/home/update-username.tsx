@@ -15,7 +15,7 @@ import { UsernameModal } from '@components/modal/username-modal';
 import { InputField } from '@components/input/input-field';
 import type { FormEvent, ChangeEvent } from 'react';
 
-export function UpdateUsername(): JSX.Element {
+export function UpdateUsername(): React.ReactElement {
   const [alreadySet, setAlreadySet] = useState(false);
   const [available, setAvailable] = useState(false);
   const [loading, setLoading] = useState(false);

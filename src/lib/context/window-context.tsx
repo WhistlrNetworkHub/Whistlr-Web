@@ -18,7 +18,7 @@ type WindowContextProviderProps = {
 
 export function WindowContextProvider({
   children
-}: WindowContextProviderProps): JSX.Element {
+}: WindowContextProviderProps): React.ReactElement {
   const [windowSize, setWindowSize] = useState<WindowSize>({
     width: window.innerWidth,
     height: window.innerHeight

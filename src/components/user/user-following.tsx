@@ -6,7 +6,7 @@ type UserFollowingProps = {
 
 export function UserFollowing({
   userTargetId
-}: UserFollowingProps): JSX.Element | null {
+}: UserFollowingProps): React.ReactElement | null {
   const { user } = useAuth();
 
   // TODO: Need to check if userTarget follows current user

@@ -33,7 +33,7 @@ export function ViewWhistleStats({
   currentTweets,
   currentReplies,
   isStatsVisible
-}: viewWhistleStats): JSX.Element {
+}: viewWhistleStats): React.ReactElement {
   const [statsType, setStatsType] = useState<StatsType | null>(null);
 
   const { open, openModal, closeModal } = useModal();

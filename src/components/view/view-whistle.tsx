@@ -24,7 +24,7 @@ type ViewWhistleProps = Tweet & {
   viewWhistleRef?: RefObject<HTMLElement>;
 };
 
-export function ViewTweet(whistle: ViewWhistleProps): JSX.Element {
+export function ViewTweet(whistle: ViewWhistleProps): React.ReactElement {
   const {
     id: whistleId,
     text,

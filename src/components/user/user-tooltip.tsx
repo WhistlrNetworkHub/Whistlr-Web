@@ -40,7 +40,7 @@ export function UserTooltip({
   following_count,
   followers_count,
   coverPhotoURL
-}: UserTooltipProps): JSX.Element {
+}: UserTooltipProps): React.ReactElement {
   const { isMobile } = useWindow();
 
   if (isMobile || modal) return <>{children}</>;

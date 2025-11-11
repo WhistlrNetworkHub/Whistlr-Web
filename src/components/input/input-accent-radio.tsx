@@ -22,7 +22,7 @@ const InputColors: Readonly<InputAccentData> = {
     'bg-accent-green hover:ring-accent-green/10 active:ring-accent-green/20'
 };
 
-export function InputAccentRadio({ type }: InputAccentRadioProps): JSX.Element {
+export function InputAccentRadio({ type }: InputAccentRadioProps): React.ReactElement {
   const { accent, changeAccent } = useTheme();
 
   const bgColor = InputColors[type];

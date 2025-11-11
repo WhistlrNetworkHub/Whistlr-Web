@@ -17,7 +17,7 @@ const variant: Variants = {
   exit: { x: '-100%', opacity: 0.8, transition: { duration: 0.4 } }
 };
 
-export function MobileSidebar(): JSX.Element {
+export function MobileSidebar(): React.ReactElement {
   const { user } = useAuth();
 
   const { photoURL, name } = user as User;

@@ -80,7 +80,7 @@ export function MobileSidebarModal({
   followers,
   coverPhotoURL,
   closeModal
-}: MobileSidebarModalProps): JSX.Element {
+}: MobileSidebarModalProps): React.ReactElement {
   const { signOut } = useAuth();
 
   const {

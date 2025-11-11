@@ -51,7 +51,7 @@ export function WhistleActions({
   userRetweetsId,
   whistleLink,
   openModal
-}: WhistleActionsProps): JSX.Element {
+}: WhistleActionsProps): React.ReactElement {
   const { user } = useAuth();
   const { open, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal();
   const { back } = useRouter();
@@ -272,7 +272,7 @@ export function WhistleActions({
           <ToolTip tip={liked ? 'Unlike' : 'Like'} />
         </Button>
         <Popover className='relative'>
-          {({ open: shareOpen, close }): JSX.Element => (
+          {({ open: shareOpen, close }): React.ReactElement => (
             <>
               <Popover.Button
                 className='hover-animation group relative flex items-center gap-1 p-0 outline-none 

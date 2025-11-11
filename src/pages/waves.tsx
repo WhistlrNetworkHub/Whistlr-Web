@@ -8,7 +8,7 @@ import { MainContainer } from '@components/home/main-container';
 import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function Waves(): JSX.Element {
+export default function Waves(): React.ReactElement {
   const [tracks, setTracks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

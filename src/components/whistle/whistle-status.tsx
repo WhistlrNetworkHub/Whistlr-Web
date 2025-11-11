@@ -9,7 +9,7 @@ type WhistleStatusProps = {
   children: ReactNode;
 };
 
-export function WhistleStatus({ type, children }: WhistleStatusProps): JSX.Element {
+export function WhistleStatus({ type, children }: WhistleStatusProps): React.ReactElement {
   return (
     <motion.div
       className='col-span-2 grid grid-cols-[48px,1fr] gap-3 text-light-secondary dark:text-dark-secondary'

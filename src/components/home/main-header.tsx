@@ -28,7 +28,7 @@ export function MainHeader({
   useActionButton,
   useMobileSidebar,
   action
-}: HomeHeaderProps): JSX.Element {
+}: HomeHeaderProps): React.ReactElement {
   return (
     <header
       className={cn(

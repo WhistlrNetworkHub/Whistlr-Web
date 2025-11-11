@@ -38,7 +38,7 @@ function setInitialAccent(): Accent {
 
 export function ThemeContextProvider({
   children
-}: ThemeContextProviderProps): JSX.Element {
+}: ThemeContextProviderProps): React.ReactElement {
   const [theme, setTheme] = useState<Theme>(setInitialTheme);
   const [accent, setAccent] = useState<Accent>(setInitialAccent);
 

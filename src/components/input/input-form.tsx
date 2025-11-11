@@ -68,7 +68,7 @@ export function InputForm({
   discardWhistle,
   handleChange,
   handleImageUpload
-}: InputFormProps): JSX.Element {
+}: InputFormProps): React.ReactElement {
   const { open, openModal, closeModal } = useModal();
 
   useEffect(() => handleShowHideNav(true), []);

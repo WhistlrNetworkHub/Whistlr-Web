@@ -9,7 +9,7 @@ export type LayoutProps = {
   children: ReactNode;
 };
 
-export function ProtectedLayout({ children }: LayoutProps): JSX.Element {
+export function ProtectedLayout({ children }: LayoutProps): React.ReactElement {
   const user = useRequireAuth();
 
   if (!user) return <Placeholder />;
@@ -17,7 +17,7 @@ export function ProtectedLayout({ children }: LayoutProps): JSX.Element {
   return <>{children}</>;
 }
 
-export function HomeLayout({ children }: LayoutProps): JSX.Element {
+export function HomeLayout({ children }: LayoutProps): React.ReactElement {
   return (
     <>
       {children}
@@ -29,7 +29,7 @@ export function HomeLayout({ children }: LayoutProps): JSX.Element {
   );
 }
 
-export function UserLayout({ children }: LayoutProps): JSX.Element {
+export function UserLayout({ children }: LayoutProps): React.ReactElement {
   return (
     <>
       {children}
@@ -41,7 +41,7 @@ export function UserLayout({ children }: LayoutProps): JSX.Element {
   );
 }
 
-export function TrendsLayout({ children }: LayoutProps): JSX.Element {
+export function TrendsLayout({ children }: LayoutProps): React.ReactElement {
   return (
     <>
       {children}
@@ -52,7 +52,7 @@ export function TrendsLayout({ children }: LayoutProps): JSX.Element {
   );
 }
 
-export function PeopleLayout({ children }: LayoutProps): JSX.Element {
+export function PeopleLayout({ children }: LayoutProps): React.ReactElement {
   return (
     <>
       {children}

@@ -30,7 +30,7 @@ export function ProgressBar({
   inputLimit,
   inputLength,
   isCharLimitExceeded
-}: ProgressBarProps): JSX.Element {
+}: ProgressBarProps): React.ReactElement {
   const isCloseToLimit = inputLength >= inputLimit - 20;
   const baseCircle = baseOffset[+isCloseToLimit];
 

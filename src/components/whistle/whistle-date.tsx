@@ -13,7 +13,7 @@ export function WhistleDate({
   createdAt,
   whistleLink,
   viewWhistle
-}: WhistleDateProps): JSX.Element {
+}: WhistleDateProps): React.ReactElement {
   return (
     <div className={cn('flex gap-1', viewWhistle && 'py-4')}>
       {!viewWhistle && <i>·</i>}

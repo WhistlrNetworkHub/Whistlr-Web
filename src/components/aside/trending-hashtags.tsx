@@ -19,7 +19,7 @@ interface TrendingHashtagsProps {
   limit?: number;
 }
 
-export function TrendingHashtags({ limit = 10 }: TrendingHashtagsProps): JSX.Element {
+export function TrendingHashtags({ limit = 10 }: TrendingHashtagsProps): React.ReactElement {
   const [hashtags, setHashtags] = useState<Hashtag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -36,7 +36,7 @@ export function EditProfileModal({
   updateData,
   removeCoverImage,
   resetUserEditData
-}: EditProfileModalProps): JSX.Element {
+}: EditProfileModalProps): React.ReactElement {
   const coverInputFileRef = useRef<HTMLInputElement>(null);
   const profileInputFileRef = useRef<HTMLInputElement>(null);
 

@@ -14,7 +14,7 @@ export function MobileSidebarLink({
   linkName,
   iconName,
   disabled
-}: MobileSidebarLinkProps): JSX.Element {
+}: MobileSidebarLinkProps): React.ReactElement {
   return (
     <Link 
       href={href} 

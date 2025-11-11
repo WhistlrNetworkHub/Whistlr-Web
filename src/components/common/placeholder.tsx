@@ -1,7 +1,7 @@
 import { CustomIcon } from '@components/ui/custom-icon';
 import { SEO } from './seo';
 
-export function Placeholder(): JSX.Element {
+export function Placeholder(): React.ReactElement {
   return (
     <main className='flex min-h-screen items-center justify-center'>
       <SEO

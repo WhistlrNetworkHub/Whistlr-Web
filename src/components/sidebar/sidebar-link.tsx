@@ -16,7 +16,7 @@ export function SidebarLink({
   linkName,
   disabled,
   canBeHidden
-}: SidebarLinkProps): JSX.Element {
+}: SidebarLinkProps): React.ReactElement {
   const { asPath } = useRouter();
   const isActive = username ? asPath.includes(username) : asPath === href;
 

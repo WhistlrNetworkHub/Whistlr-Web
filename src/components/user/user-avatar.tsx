@@ -22,7 +22,7 @@ export function UserAvatar({
   username,
   className,
   isLink = true
-}: UserAvatarProps): JSX.Element {
+}: UserAvatarProps): React.ReactElement {
   const pictureSize = size ?? 48;
 
   const avatarImage = (

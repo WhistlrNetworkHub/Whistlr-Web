@@ -30,7 +30,7 @@ export function WhistleStats({
   userRetweets,
   userReplies: totalReplies,
   openModal
-}: WhistleStatsProps): JSX.Element {
+}: WhistleStatsProps): React.ReactElement {
   const totalLikes = userLikes?.length || 0;
   const totalTweets = userRetweets?.length || 0;
 

@@ -9,7 +9,7 @@ type UserHomeCoverProps = {
   coverData?: ImageData | null;
 };
 
-export function UserHomeCover({ coverData }: UserHomeCoverProps): JSX.Element {
+export function UserHomeCover({ coverData }: UserHomeCoverProps): React.ReactElement {
   const { open, openModal, closeModal } = useModal();
 
   return (

@@ -33,7 +33,7 @@ export function UsernameModal({
   alreadySet,
   changeUsername,
   cancelUpdateUsername
-}: UsernameModalProps): JSX.Element {
+}: UsernameModalProps): React.ReactElement {
   const { title, description, cancelLabel } = usernameModalData[+alreadySet];
 
   return (

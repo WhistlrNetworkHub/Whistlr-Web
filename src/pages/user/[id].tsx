@@ -15,7 +15,7 @@ import { Button } from '@components/ui/button';
 import { HeroIcon } from '@components/ui/hero-icon';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function UserProfile(): JSX.Element {
+export default function UserProfile(): React.ReactElement {
   const router = useRouter();
   const { id } = router.query;
   const { user: currentUser } = useAuth();

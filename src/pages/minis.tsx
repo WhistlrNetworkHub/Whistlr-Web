@@ -39,7 +39,7 @@ interface Mini {
   };
 }
 
-export default function Minis(): JSX.Element {
+export default function Minis(): React.ReactElement {
   const { user } = useAuth();
   const [minis, setMinis] = useState<Mini[]>([]);
   const [loading, setLoading] = useState(true);
