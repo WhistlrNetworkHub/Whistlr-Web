@@ -52,15 +52,24 @@ class VideoManager {
   private wasPlayingBeforePause: string | null = null;
   
   private constructor() {
-    this.setupNetworkMonitoring();
-    this.setupMemoryMonitoring();
-    this.setupVisibilityHandling();
-    this.setupUnloadHandler();
-    
-    console.log('🚀 [VIDEO-MANAGER] Initialized with TikTok-style optimizations');
+    // Only initialize if we're in the browser
+    if (typeof window !== 'undefined') {
+      this.setupNetworkMonitoring();
+      this.setupMemoryMonitoring();
+      this.setupVisibilityHandling();
+      this.setupUnloadHandler();
+      
+      console.log('🚀 [VIDEO-MANAGER] Initialized with TikTok-style optimizations');
+    }
   }
 
   static getInstance(): VideoManager {
+    // Only create instance in browser environment
+    if (typeof window === 'undefined') {
+      // Return a mock instance for SSR
+      return {} as VideoManager;
+    }
+    
     if (!VideoManager.instance) {
       VideoManager.instance = new VideoManager();
     }
@@ -93,6 +102,10 @@ class VideoManager {
    * Create optimized video player with TikTok-style settings
    */
   private createOptimizedPlayer(videoId: string, videoUrl: string): HTMLVideoElement {
+    if (typeof document === 'undefined') {
+      throw new Error('Cannot create video player in SSR environment');
+    }
+    
     console.log(`🎬 [VIDEO-MANAGER] Creating optimized player for: ${videoId}`);
     
     const video = document.createElement('video');
@@ -349,6 +362,8 @@ class VideoManager {
    * Setup network quality monitoring
    */
   private setupNetworkMonitoring() {
+    if (typeof navigator === 'undefined') return;
+    
     // Use Network Information API if available
     this.connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
     
@@ -391,6 +406,8 @@ class VideoManager {
    * Setup memory pressure monitoring
    */
   private setupMemoryMonitoring() {
+    if (typeof window === 'undefined' || typeof performance === 'undefined') return;
+    
     // Check memory usage every 30 seconds
     this.memoryCheckInterval = setInterval(() => {
       this.checkMemoryUsage();
@@ -409,21 +426,21 @@ class VideoManager {
    * Check current memory usage
    */
   private checkMemoryUsage() {
-    if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      if (memory) {
-        const usedMemory = memory.usedJSHeapSize;
-        const totalMemory = memory.totalJSHeapSize;
-        const limit = memory.jsHeapSizeLimit;
-        
-        const usagePercent = (usedMemory / limit) * 100;
-        
-        console.log(`📊 [VIDEO-MANAGER] Memory: ${(usedMemory / 1024 / 1024).toFixed(0)}MB / ${(limit / 1024 / 1024).toFixed(0)}MB (${usagePercent.toFixed(1)}%)`);
-        
-        // Trigger cleanup if usage is high
-        if (usagePercent > 85) {
-          this.handleMemoryPressure();
-        }
+    if (typeof performance === 'undefined' || !('memory' in performance)) return;
+    
+    const memory = (performance as any).memory;
+    if (memory) {
+      const usedMemory = memory.usedJSHeapSize;
+      const totalMemory = memory.totalJSHeapSize;
+      const limit = memory.jsHeapSizeLimit;
+      
+      const usagePercent = (usedMemory / limit) * 100;
+      
+      console.log(`📊 [VIDEO-MANAGER] Memory: ${(usedMemory / 1024 / 1024).toFixed(0)}MB / ${(limit / 1024 / 1024).toFixed(0)}MB (${usagePercent.toFixed(1)}%)`);
+      
+      // Trigger cleanup if usage is high
+      if (usagePercent > 85) {
+        this.handleMemoryPressure();
       }
     }
   }
@@ -434,6 +451,8 @@ class VideoManager {
    * Setup page visibility handling (auto-pause on background)
    */
   private setupVisibilityHandling() {
+    if (typeof document === 'undefined') return;
+    
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         console.log('⏸️ [VIDEO-MANAGER] Page hidden - pausing videos');
@@ -459,6 +478,8 @@ class VideoManager {
    * Setup cleanup on page unload
    */
   private setupUnloadHandler() {
+    if (typeof window === 'undefined') return;
+    
     window.addEventListener('beforeunload', () => {
       console.log('🛑 [VIDEO-MANAGER] Page unloading - cleaning up');
       this.cleanupAllPlayers();

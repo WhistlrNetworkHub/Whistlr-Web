@@ -61,12 +61,45 @@ class PerformanceOptimizer {
   private periodicCleanupInterval: NodeJS.Timeout | null = null;
   
   private constructor() {
-    this.detectDeviceTier();
-    this.setupPerformanceMonitoring();
-    console.log(`🎯 [PERFORMANCE-OPTIMIZER] Initialized for ${this.deviceTier} device`);
+    // Only initialize if we're in the browser
+    if (typeof window !== 'undefined') {
+      this.detectDeviceTier();
+      this.setupPerformanceMonitoring();
+      console.log(`🎯 [PERFORMANCE-OPTIMIZER] Initialized for ${this.deviceTier} device`);
+    }
   }
 
   static getInstance(): PerformanceOptimizer {
+    // Only create instance in browser environment
+    if (typeof window === 'undefined') {
+      // Return a mock instance for SSR with default values
+      return {
+        getOptimizedInitStrategy: () => ({
+          prefetchDistance: 4,
+          imagePrefetchCount: 8,
+          videoPrefetchCount: 2,
+          enableAggressiveCaching: true,
+          maxConcurrentVideoPlayers: 3,
+          enableRealtimeThrottling: false
+        }),
+        startSession: () => {},
+        trackVideoPlay: () => {},
+        trackCommentSubmission: () => {},
+        getPerformanceMetrics: () => ({
+          sessionDuration: 0,
+          totalVideosPlayed: 0,
+          totalCommentsSubmitted: 0,
+          currentMemoryUsage: 0,
+          peakMemoryUsage: 0,
+          memoryLeakDetected: false
+        }),
+        getPerformanceReport: () => 'SSR Mode',
+        getDeviceTier: () => DeviceTier.UNKNOWN,
+        isLowPower: () => false,
+        destroy: () => {}
+      } as PerformanceOptimizer;
+    }
+    
     if (!PerformanceOptimizer.instance) {
       PerformanceOptimizer.instance = new PerformanceOptimizer();
     }
@@ -79,6 +112,11 @@ class PerformanceOptimizer {
    * Detect device tier based on hardware
    */
   private detectDeviceTier() {
+    if (typeof navigator === 'undefined') {
+      this.deviceTier = DeviceTier.UNKNOWN;
+      return;
+    }
+    
     // Get device memory (GB)
     this.deviceMemory = (navigator as any).deviceMemory || 4;
     
@@ -109,6 +147,8 @@ class PerformanceOptimizer {
    * Detect low power mode (battery saver)
    */
   private detectLowPowerMode() {
+    if (typeof navigator === 'undefined') return;
+    
     // Check for Battery Status API
     if ('getBattery' in navigator) {
       (navigator as any).getBattery().then((battery: any) => {
@@ -281,14 +321,14 @@ class PerformanceOptimizer {
    * Check current memory usage
    */
   private checkMemoryUsage() {
-    if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      if (memory) {
-        this.currentMemoryUsage = memory.usedJSHeapSize;
-        
-        if (this.currentMemoryUsage > this.peakMemoryUsage) {
-          this.peakMemoryUsage = this.currentMemoryUsage;
-        }
+    if (typeof performance === 'undefined' || !('memory' in performance)) return;
+    
+    const memory = (performance as any).memory;
+    if (memory) {
+      this.currentMemoryUsage = memory.usedJSHeapSize;
+      
+      if (this.currentMemoryUsage > this.peakMemoryUsage) {
+        this.peakMemoryUsage = this.currentMemoryUsage;
       }
     }
   }
@@ -390,6 +430,8 @@ class PerformanceOptimizer {
    * Setup performance monitoring
    */
   private setupPerformanceMonitoring() {
+    if (typeof performance === 'undefined') return;
+    
     // Monitor memory warnings if supported
     if ('memory' in performance) {
       setInterval(() => {
