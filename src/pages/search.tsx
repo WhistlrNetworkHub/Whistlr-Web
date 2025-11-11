@@ -159,30 +159,32 @@ export default function Search(): JSX.Element {
       <SEO title={`Search${searchQuery ? `: ${searchQuery}` : ''} / Whistlr`} />
       
       {/* TikTok-Style Search Header */}
-      <div className='sticky top-0 z-10 glass-morphism-strong px-4 py-3'>
+      <div className='sticky top-0 z-10 glass-morphism-strong border-b border-white/5 px-4 py-4'>
         <div className='flex items-center gap-3'>
           {/* Back Button */}
           <button
             onClick={() => router.back()}
-            className='flex items-center justify-center hover:opacity-80 transition-opacity'
+            className='flex items-center justify-center w-9 h-9 rounded-full glass-morphism hover:bg-white/10 transition-all duration-200'
           >
             <HeroIcon iconName='ChevronLeftIcon' className='h-5 w-5 text-white' />
           </button>
 
           {/* Search Bar with Gradient Border */}
-          <form onSubmit={handleSearchSubmit} className='flex-1 relative'>
+          <form onSubmit={handleSearchSubmit} className='flex-1 relative group'>
             <div className='relative'>
-              <div className='absolute inset-0 rounded-[20px] bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 opacity-80 blur-[2px]' />
-              <div className='relative flex items-center gap-2 px-4 py-2 bg-transparent rounded-[20px] border-2 border-transparent' style={{
-                borderImage: 'linear-gradient(135deg, cyan, blue, purple, pink) 1'
-              }}>
-                <HeroIcon iconName='MagnifyingGlassIcon' className='h-4 w-4 text-white/70' />
+              {/* Animated Gradient Border */}
+              <div className='absolute -inset-[1px] rounded-[22px] bg-gradient-to-br from-cyan-400 via-blue-500 via-purple-500 to-pink-500 opacity-60 group-hover:opacity-100 blur-sm transition-all duration-300' />
+              
+              {/* Search Input Container */}
+              <div className='relative flex items-center gap-3 px-4 py-2.5 glass-morphism-light rounded-[22px] border border-white/10 backdrop-blur-xl shadow-2xl'>
+                <HeroIcon iconName='MagnifyingGlassIcon' className='h-4 w-4 text-white/70 flex-shrink-0' />
                 <input
                   type='text'
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  placeholder='Search'
-                  className='flex-1 bg-transparent text-white placeholder:text-white/70 outline-none text-sm'
+                  placeholder='Search Whistlr'
+                  className='flex-1 bg-transparent text-white placeholder:text-white/60 outline-none text-sm font-medium'
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
                 />
                 {searchText && (
                   <button
@@ -191,9 +193,9 @@ export default function Search(): JSX.Element {
                       setSearchText('');
                       setResults([]);
                     }}
-                    className='hover:opacity-80 transition-opacity'
+                    className='flex-shrink-0 w-5 h-5 rounded-full glass-morphism hover:bg-white/10 flex items-center justify-center transition-all duration-200'
                   >
-                    <HeroIcon iconName='XMarkIcon' className='h-4 w-4 text-white/70' />
+                    <HeroIcon iconName='XMarkIcon' className='h-3.5 w-3.5 text-white/70' />
                   </button>
                 )}
               </div>
@@ -201,32 +203,38 @@ export default function Search(): JSX.Element {
           </form>
 
           {/* More Options */}
-          <button className='flex items-center justify-center hover:opacity-80 transition-opacity'>
+          <button className='flex items-center justify-center w-9 h-9 rounded-full glass-morphism hover:bg-white/10 transition-all duration-200'>
             <HeroIcon iconName='EllipsisHorizontalIcon' className='h-5 w-5 text-white' />
           </button>
         </div>
       </div>
 
       {/* Category Tabs (TikTok Style) */}
-      <div className='flex items-center justify-around px-4 pb-4 border-b border-white/10'>
+      <div className='flex items-center justify-around px-4 py-1 border-b border-white/5'>
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className='flex flex-col items-center gap-2 py-2'
+            className='relative flex flex-col items-center gap-2 py-3 px-2 transition-all duration-200'
           >
-            <span className={`text-base transition-all ${
-              selectedCategory === category
-                ? 'text-white font-semibold'
-                : 'text-white/60 font-medium'
-            }`}>
+            <span 
+              className={`text-base transition-all duration-200 ${
+                selectedCategory === category
+                  ? 'text-white font-semibold'
+                  : 'text-white/50 font-medium hover:text-white/70'
+              }`}
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}
+            >
               {category}
             </span>
-            <div className={`h-0.5 w-full transition-all ${
-              selectedCategory === category
-                ? 'bg-white'
-                : 'bg-transparent'
-            }`} />
+            <motion.div 
+              className='h-[2px] w-full rounded-full'
+              animate={{
+                backgroundColor: selectedCategory === category ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0)',
+                boxShadow: selectedCategory === category ? '0 0 8px rgba(255, 255, 255, 0.5)' : '0 0 0 rgba(255, 255, 255, 0)'
+              }}
+              transition={{ duration: 0.3 }}
+            />
           </button>
         ))}
       </div>
@@ -251,13 +259,16 @@ export default function Search(): JSX.Element {
           <>
             {/* Featured Section - Horizontal Scroll */}
             {results.length > 0 && (
-              <div className='mb-6'>
-                <div className='flex gap-4 overflow-x-auto pb-4 scrollbar-hide'>
-                  {results.slice(0, 4).map((post) => (
+              <div className='mb-8'>
+                <div className='flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide'>
+                  {results.slice(0, 4).map((post, index) => (
                     <Link key={post.id} href={selectedCategory === 'Creators' ? `/user/${post.user?.id}` : `/tweet/${post.id}`}>
                       <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className='relative flex-shrink-0 w-[200px] h-[280px] rounded-[20px] overflow-hidden cursor-pointer'
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1, duration: 0.3 }}
+                        whileHover={{ scale: 1.03, y: -4 }}
+                        className='relative flex-shrink-0 w-[200px] h-[280px] rounded-[24px] overflow-hidden cursor-pointer shadow-2xl'
                       >
                         {/* Background Image */}
                         <div className='absolute inset-0'>
@@ -274,33 +285,38 @@ export default function Search(): JSX.Element {
                               className='w-full h-full object-cover'
                             />
                           ) : (
-                            <div className='w-full h-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600' />
+                            <div className='w-full h-full bg-gradient-to-br from-cyan-500 via-blue-600 to-purple-700' />
                           )}
                         </div>
 
-                        {/* Gradient Overlay */}
-                        <div className='absolute inset-0 bg-gradient-to-b from-transparent to-black/70' />
+                        {/* Premium Gradient Overlay */}
+                        <div className='absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80' />
+
+                        {/* Border Glow */}
+                        <div className='absolute inset-0 rounded-[24px] border border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.1)]' />
 
                         {/* Text Content */}
                         <div className='absolute inset-0 p-4 flex flex-col justify-between'>
-                          <span className='text-xs font-semibold text-white/90 uppercase'>
-                            Featured
-                          </span>
+                          <div className='inline-flex items-center px-3 py-1 rounded-full glass-morphism-strong border border-white/20 self-start'>
+                            <span className='text-[10px] font-bold text-white uppercase tracking-wider'>
+                              Featured
+                            </span>
+                          </div>
                           
-                          <div className='space-y-1'>
+                          <div className='space-y-1.5'>
                             {post.content && selectedCategory !== 'Creators' ? (
-                              <p className='text-sm font-bold text-white line-clamp-2'>
+                              <p className='text-[13px] font-bold text-white line-clamp-2 drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                                 {post.content}
                               </p>
                             ) : (
-                              <p className='text-sm font-bold text-white'>
+                              <p className='text-[13px] font-bold text-white drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                                 @{post.user?.username}
                               </p>
                             )}
-                            <p className='text-xs font-medium text-white/80'>
+                            <p className='text-[10px] font-semibold text-white/90 drop-shadow-md' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                               by @{post.user?.username}
                             </p>
-                            <p className='text-xs font-medium text-white/80'>
+                            <p className='text-[9px] font-medium text-white/80 drop-shadow-md' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                               {formatCount(post.likes_count)} whistles
                             </p>
                           </div>
@@ -313,11 +329,11 @@ export default function Search(): JSX.Element {
             )}
 
             {/* Top Section Title */}
-            <div className='flex items-center justify-between mb-4'>
-              <h2 className='text-2xl font-bold text-white'>
+            <div className='flex items-center justify-between mb-6'>
+              <h2 className='text-[26px] font-bold text-white tracking-tight' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                 Top {selectedCategory}
               </h2>
-              <button className='hover:opacity-80 transition-opacity'>
+              <button className='w-9 h-9 rounded-full glass-morphism hover:bg-white/10 flex items-center justify-center transition-all duration-200'>
                 <HeroIcon iconName='ArrowPathIcon' className='h-5 w-5 text-white/70' />
               </button>
             </div>
@@ -325,55 +341,69 @@ export default function Search(): JSX.Element {
             {/* Results Grid */}
             {selectedCategory === 'Whistles' ? (
               /* List layout for Whistles */
-              <div className='space-y-2'>
-                {results.map((post) => (
+              <div className='space-y-3'>
+                {results.map((post, index) => (
                   <Link key={post.id} href={`/tweet/${post.id}`}>
                     <motion.div
-                      whileHover={{ scale: 1.01 }}
-                      className='p-4 rounded-xl glass-morphism-light border border-white/10 cursor-pointer'
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                      whileHover={{ scale: 1.01, x: 4 }}
+                      className='p-5 rounded-2xl glass-morphism-light border border-white/10 hover:border-white/20 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200'
                     >
                       {/* Header */}
                       <div className='flex items-center gap-3 mb-3'>
-                        <img
-                          src={getFullImageURL(post.user?.avatar_url || '')}
-                          alt={post.user?.username}
-                          className='w-10 h-10 rounded-full object-cover'
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/default-avatar.png';
-                          }}
-                        />
+                        <div className='relative'>
+                          <img
+                            src={getFullImageURL(post.user?.avatar_url || '')}
+                            alt={post.user?.username}
+                            className='w-11 h-11 rounded-full object-cover ring-2 ring-white/10'
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/default-avatar.png';
+                            }}
+                          />
+                          {post.user?.is_verified && (
+                            <div className='absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center'>
+                              <HeroIcon iconName='CheckIcon' className='h-2.5 w-2.5 text-white' />
+                            </div>
+                          )}
+                        </div>
                         <div className='flex-1'>
-                          <p className='text-base font-semibold text-white'>
+                          <p className='text-base font-semibold text-white' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                             @{post.user?.username}
                           </p>
-                          <p className='text-sm text-white/60'>2h</p>
+                          <p className='text-xs text-white/50 font-medium'>2h</p>
                         </div>
-                        <button className='hover:opacity-80'>
-                          <HeroIcon iconName='EllipsisHorizontalIcon' className='h-5 w-5 text-white/70' />
+                        <button className='w-8 h-8 rounded-full hover:bg-white/5 flex items-center justify-center transition-all'>
+                          <HeroIcon iconName='EllipsisHorizontalIcon' className='h-4 w-4 text-white/60' />
                         </button>
                       </div>
 
                       {/* Content */}
                       {post.content && (
-                        <p className='text-base text-white mb-3 line-clamp-3'>
+                        <p className='text-[15px] text-white/95 mb-4 line-clamp-3 leading-relaxed' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                           {post.content}
                         </p>
                       )}
 
                       {/* Engagement */}
-                      <div className='flex items-center gap-5'>
+                      <div className='flex items-center gap-6'>
                         <div className='flex items-center gap-2'>
-                          <div className='w-4 h-4 text-white/70'>♪</div>
-                          <span className='text-sm text-white/80'>
+                          <div className='w-4 h-4 text-blue-400'>♪</div>
+                          <span className='text-sm text-white/70 font-medium'>
                             {formatCount(post.likes_count)}
                           </span>
                         </div>
                         <div className='flex items-center gap-2'>
-                          <HeroIcon iconName='ChatBubbleLeftIcon' className='h-4 w-4 text-white/70' />
-                          <span className='text-sm text-white/80'>
+                          <HeroIcon iconName='ChatBubbleLeftIcon' className='h-4 w-4 text-white/60' />
+                          <span className='text-sm text-white/70 font-medium'>
                             {formatCount(post.comments_count)}
                           </span>
+                        </div>
+                        <div className='flex items-center gap-2 ml-auto'>
+                          <HeroIcon iconName='ArrowPathRoundedSquareIcon' className='h-4 w-4 text-white/60' />
+                          <HeroIcon iconName='ShareIcon' className='h-4 w-4 text-white/60' />
                         </div>
                       </div>
                     </motion.div>
@@ -382,12 +412,15 @@ export default function Search(): JSX.Element {
               </div>
             ) : selectedCategory === 'Creators' ? (
               /* Grid layout for Creators */
-              <div className='grid grid-cols-2 gap-2'>
-                {results.map((post) => (
+              <div className='grid grid-cols-2 gap-3'>
+                {results.map((post, index) => (
                   <Link key={post.id} href={`/user/${post.user?.id}`}>
                     <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className='relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer'
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                      whileHover={{ scale: 1.03, y: -4 }}
+                      className='relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-200'
                     >
                       {/* Background */}
                       <div className='absolute inset-0'>
@@ -398,19 +431,34 @@ export default function Search(): JSX.Element {
                             className='w-full h-full object-cover'
                           />
                         ) : (
-                          <div className='w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500' />
+                          <div className='w-full h-full bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600' />
                         )}
                       </div>
 
-                      {/* Gradient Overlay */}
-                      <div className='absolute inset-0 bg-gradient-to-b from-transparent to-black/60' />
+                      {/* Premium Gradient Overlay */}
+                      <div className='absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/75' />
+
+                      {/* Border Glow */}
+                      <div className='absolute inset-0 rounded-2xl border border-white/20 shadow-[inset_0_0_30px_rgba(255,255,255,0.1)]' />
 
                       {/* Text */}
                       <div className='absolute inset-0 p-4 flex flex-col justify-end'>
-                        <p className='text-xs font-medium text-white/90 mb-2'>Creator</p>
-                        <p className='text-lg font-bold text-white'>
+                        <div className='inline-flex items-center px-2.5 py-1 rounded-full glass-morphism-strong border border-white/20 self-start mb-2'>
+                          <span className='text-[10px] font-bold text-white/95 uppercase tracking-wider'>
+                            Creator
+                          </span>
+                        </div>
+                        <p className='text-lg font-bold text-white drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                           @{post.user?.username}
                         </p>
+                        {post.user?.is_verified && (
+                          <div className='flex items-center gap-1 mt-1'>
+                            <div className='w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center'>
+                              <HeroIcon iconName='CheckIcon' className='h-2 w-2 text-white' />
+                            </div>
+                            <span className='text-xs text-white/90 font-medium'>Verified</span>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   </Link>
@@ -418,12 +466,15 @@ export default function Search(): JSX.Element {
               </div>
             ) : (
               /* Grid layout for Mini's and Imprints */
-              <div className='grid grid-cols-2 gap-2'>
-                {results.map((post) => (
+              <div className='grid grid-cols-2 gap-3'>
+                {results.map((post, index) => (
                   <Link key={post.id} href={`/tweet/${post.id}`}>
                     <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className='relative aspect-square rounded-lg overflow-hidden cursor-pointer'
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                      whileHover={{ scale: 1.03, y: -4 }}
+                      className='relative aspect-square rounded-xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl transition-all duration-200'
                     >
                       {/* Media */}
                       {post.media_urls && post.media_urls[0] ? (
@@ -442,23 +493,35 @@ export default function Search(): JSX.Element {
                           />
                         )
                       ) : (
-                        <div className='w-full h-full bg-gradient-to-br from-blue-400 to-cyan-400' />
+                        <div className='w-full h-full bg-gradient-to-br from-blue-500 to-cyan-500' />
                       )}
 
+                      {/* Border Glow */}
+                      <div className='absolute inset-0 rounded-xl border border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)]' />
+
                       {/* Likes Badge */}
-                      <div className='absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-black/60'>
+                      <div className='absolute top-2 right-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full glass-morphism-strong border border-white/20 backdrop-blur-xl shadow-lg'>
                         <div className='w-2.5 h-2.5 text-blue-400'>♪</div>
-                        <span className='text-xs font-semibold text-white'>
+                        <span className='text-[11px] font-bold text-white'>
                           {formatCount(post.likes_count)}
                         </span>
                       </div>
 
                       {/* Content Overlay */}
                       {post.content && (
-                        <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2'>
-                          <p className='text-xs font-medium text-white line-clamp-2'>
+                        <div className='absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3'>
+                          <p className='text-xs font-semibold text-white line-clamp-2 drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                             {post.content}
                           </p>
+                        </div>
+                      )}
+
+                      {/* Play Icon for Videos */}
+                      {selectedCategory === "Mini's" && (
+                        <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
+                          <div className='w-12 h-12 rounded-full glass-morphism-strong border border-white/30 flex items-center justify-center shadow-2xl'>
+                            <HeroIcon iconName='PlayIcon' className='h-6 w-6 text-white ml-1' />
+                          </div>
                         </div>
                       )}
                     </motion.div>
