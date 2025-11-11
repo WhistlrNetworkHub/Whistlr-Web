@@ -116,8 +116,8 @@ export function FollowersModal({
             </p>
             <p className='text-white/60 text-sm mt-2 text-center'>
               {type === 'followers'
-                ? 'When someone follows this account, they'll show up here.'
-                : 'When they follow someone, they'll show up here.'}
+                ? "When someone follows this account, they'll show up here."
+                : "When they follow someone, they'll show up here."}
             </p>
           </div>
         ) : (
