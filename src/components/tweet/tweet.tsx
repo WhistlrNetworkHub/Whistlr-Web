@@ -121,7 +121,7 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
                 src={avatar_url || ''}
                 alt={full_name || username || 'User'}
                 username={username || ''}
-                isLink={false}
+                isLink={modal ? true : false}
               />
             </UserTooltip>
             {parentTweet && (
