@@ -4,29 +4,29 @@ import cn from 'clsx';
 import { useAuth } from '@lib/context/auth-context';
 import { useModal } from '@lib/hooks/useModal';
 import { Modal } from '@components/modal/modal';
-import { TweetReplyModal } from '@components/modal/tweet-reply-modal';
+import { WhistleReplyModal } from '@components/modal/tweet-reply-modal';
 import { ImagePreview } from '@components/input/image-preview';
 import { UserAvatar } from '@components/user/user-avatar';
 import { UserTooltip } from '@components/user/user-tooltip';
 import { UserName } from '@components/user/user-name';
 import { UserUsername } from '@components/user/user-username';
-import { variants } from '@components/tweet/tweet';
-import { TweetActions } from '@components/tweet/tweet-actions';
-import { TweetStats } from '@components/tweet/tweet-stats';
-import { TweetDate } from '@components/tweet/tweet-date';
+import { variants } from '@components/whistle/whistle';
+import { WhistleActions } from '@components/whistle/whistle-actions';
+import { WhistleStats } from '@components/whistle/whistle-stats';
+import { WhistleDate } from '@components/whistle/whistle-date';
 import { Input } from '@components/input/input';
 import type { RefObject } from 'react';
 import type { User } from '@lib/types/user';
-import type { Tweet } from '@lib/types/tweet';
+import type { Tweet } from '@lib/types/whistle';
 
-type ViewTweetProps = Tweet & {
+type ViewWhistleProps = Tweet & {
   user: User;
-  viewTweetRef?: RefObject<HTMLElement>;
+  viewWhistleRef?: RefObject<HTMLElement>;
 };
 
-export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
+export function ViewTweet(whistle: ViewWhistleProps): JSX.Element {
   const {
-    id: tweetId,
+    id: whistleId,
     text,
     images,
     parent,
@@ -35,17 +35,17 @@ export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
     createdAt,
     userRetweets,
     userReplies,
-    viewTweetRef,
-    user: tweetUserData
+    viewWhistleRef,
+    user: whistleUserData
   } = tweet;
 
-  const { id: ownerId, name, username, verified, photoURL } = tweetUserData;
+  const { id: ownerId, name, username, verified, photoURL } = whistleUserData;
 
   const { user } = useAuth();
 
   const { open, openModal, closeModal } = useModal();
 
-  const tweetLink = `/tweet/${tweetId}`;
+  const whistleLink = `/whistle/${whistleId}`;
 
   const userId = user?.id as string;
 
@@ -65,7 +65,7 @@ export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
       {...variants}
       animate={{ ...variants.animate, transition: { duration: 0.2 } }}
       exit={undefined}
-      ref={viewTweetRef}
+      ref={viewWhistleRef}
     >
       <Modal
         className='flex items-start justify-center'
@@ -73,7 +73,7 @@ export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
         open={open}
         closeModal={closeModal}
       >
-        <TweetReplyModal tweet={tweet} closeModal={closeModal} />
+        <WhistleReplyModal whistle={tweet} closeModal={closeModal} />
       </Modal>
       <div className='flex flex-col gap-2'>
         {reply && (
@@ -82,12 +82,12 @@ export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
           </div>
         )}
         <div className='grid grid-cols-[auto,1fr] gap-3'>
-          <UserTooltip avatar {...tweetUserData}>
+          <UserTooltip avatar {...whistleUserData}>
             <UserAvatar src={photoURL} alt={name} username={username} />
           </UserTooltip>
           <div className='flex min-w-0 justify-between'>
             <div className='flex flex-col truncate xs:overflow-visible xs:whitespace-normal'>
-              <UserTooltip {...tweetUserData}>
+              <UserTooltip {...whistleUserData}>
                 <UserName
                   className='-mb-1'
                   name={name}
@@ -95,16 +95,16 @@ export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
                   verified={verified}
                 />
               </UserTooltip>
-              <UserTooltip {...tweetUserData}>
+              <UserTooltip {...whistleUserData}>
                 <UserUsername username={username} />
               </UserTooltip>
             </div>
             <div className='px-4'>
-              <TweetActions
-                viewTweet
+              <WhistleActions
+                viewWhistle
                 isOwner={isOwner}
                 ownerId={ownerId}
-                tweetId={tweetId}
+                whistleId={whistleId}
                 parentId={parentId}
                 username={username}
                 hasImages={!!images}
@@ -130,7 +130,7 @@ export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
         )}
         {images && (
           <ImagePreview
-            viewTweet
+            viewWhistle
             imagesPreview={images}
             previewCount={images.length}
           />
@@ -139,20 +139,20 @@ export function ViewTweet(tweet: ViewTweetProps): JSX.Element {
           className='inner:hover-animation inner:border-b inner:border-light-border
                      dark:inner:border-dark-border'
         >
-          <TweetDate viewTweet tweetLink={tweetLink} createdAt={createdAt} />
-          <TweetStats
-            viewTweet
+          <WhistleDate viewWhistle whistleLink={whistleLink} createdAt={createdAt} />
+          <WhistleStats
+            viewWhistle
             reply={reply}
             userId={userId}
             isOwner={isOwner}
-            tweetId={tweetId}
+            whistleId={whistleId}
             userLikes={userLikes}
             userRetweets={userRetweets}
             userReplies={userReplies}
             openModal={openModal}
           />
         </div>
-        <Input reply parent={{ id: tweetId, username: username }} />
+        <Input reply parent={{ id: whistleId, username: username }} />
       </div>
     </motion.article>
   );

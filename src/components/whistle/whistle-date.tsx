@@ -2,30 +2,30 @@ import Link from 'next/link';
 import cn from 'clsx';
 import { formatDate } from '@lib/date';
 import { ToolTip } from '@components/ui/tooltip';
-import type { Tweet } from '@lib/types/tweet';
+import type { Tweet } from '@lib/types/whistle';
 
-type TweetDateProps = Pick<Tweet, 'createdAt'> & {
-  tweetLink: string;
-  viewTweet?: boolean;
+type WhistleDateProps = Pick<Tweet, 'createdAt'> & {
+  whistleLink: string;
+  viewWhistle?: boolean;
 };
 
-export function TweetDate({
+export function WhistleDate({
   createdAt,
-  tweetLink,
-  viewTweet
-}: TweetDateProps): JSX.Element {
+  whistleLink,
+  viewWhistle
+}: WhistleDateProps): JSX.Element {
   return (
-    <div className={cn('flex gap-1', viewTweet && 'py-4')}>
-      {!viewTweet && <i>·</i>}
+    <div className={cn('flex gap-1', viewWhistle && 'py-4')}>
+      {!viewWhistle && <i>·</i>}
       <div className='group relative'>
         <Link 
-          href={tweetLink}
+          href={whistleLink}
           className={cn(
             'custom-underline peer whitespace-nowrap',
-            viewTweet && 'text-light-secondary dark:text-dark-secondary'
+            viewWhistle && 'text-light-secondary dark:text-dark-secondary'
           )}
         >
-          {formatDate(createdAt, viewTweet ? 'full' : 'tweet')}
+          {formatDate(createdAt, viewWhistle ? 'full' : 'tweet')}
         </Link>
         <ToolTip
           className='translate-y-1 peer-focus:opacity-100 peer-focus-visible:visible

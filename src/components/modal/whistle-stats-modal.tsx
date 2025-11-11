@@ -1,18 +1,18 @@
 import { MainHeader } from '@components/home/main-header';
 import type { ReactNode } from 'react';
-import type { StatsType } from '@components/view/view-tweet-stats';
+import type { StatsType } from '@components/view/view-whistle-stats';
 
-type TweetStatsModalProps = {
+type WhistleStatsModalProps = {
   children: ReactNode;
   statsType: StatsType | null;
   handleClose: () => void;
 };
 
-export function TweetStatsModal({
+export function WhistleStatsModal({
   children,
   statsType,
   handleClose
-}: TweetStatsModalProps): JSX.Element {
+}: WhistleStatsModalProps): JSX.Element {
   return (
     <>
       <MainHeader

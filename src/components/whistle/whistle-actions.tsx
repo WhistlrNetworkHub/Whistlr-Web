@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '@lib/context/auth-context';
 import { useModal } from '@lib/hooks/useModal';
 import {
-  removeTweet,
+  removeWhistle,
   manageReply,
   manageLike,
   manageRetweet,
@@ -31,27 +31,27 @@ const variants: Variants = {
   exit: { opacity: 0, y: -25, transition: { duration: 0.2 } }
 };
 
-type TweetActionsProps = {
+type WhistleActionsProps = {
   isOwner: boolean;
   ownerId: string;
-  tweetId: string;
+  whistleId: string;
   username: string;
   userLikesId: number;
   userRetweetsId: number;
-  tweetLink: string;
+  whistleLink: string;
   openModal?: () => void;
 };
 
-export function TweetActions({
+export function WhistleActions({
   isOwner,
   ownerId,
-  tweetId,
+  whistleId,
   username,
   userLikesId,
   userRetweetsId,
-  tweetLink,
+  whistleLink,
   openModal
-}: TweetActionsProps): JSX.Element {
+}: WhistleActionsProps): JSX.Element {
   const { user } = useAuth();
   const { open, openModal: openDeleteModal, closeModal: closeDeleteModal } = useModal();
   const { back } = useRouter();
@@ -72,7 +72,7 @@ export function TweetActions({
         .from('post_likes')
         .select('id')
         .eq('user_id', userId)
-        .eq('post_id', tweetId)
+        .eq('post_id', whistleId)
         .maybeSingle();
       setLiked(!!likeData);
 
@@ -81,7 +81,7 @@ export function TweetActions({
         .from('post_boosts')
         .select('id')
         .eq('user_id', userId)
-        .eq('post_id', tweetId)
+        .eq('post_id', whistleId)
         .maybeSingle();
       setReposted(!!repostData);
 
@@ -90,13 +90,13 @@ export function TweetActions({
         .from('post_saves')
         .select('id')
         .eq('user_id', userId)
-        .eq('post_id', tweetId)
+        .eq('post_id', whistleId)
         .maybeSingle();
       setBookmarked(!!bookmarkData);
     };
 
     checkStatus();
-  }, [userId, tweetId]);
+  }, [userId, whistleId]);
 
   const handleLike = async (): Promise<void> => {
     if (!userId) return;
@@ -111,12 +111,12 @@ export function TweetActions({
           .from('post_likes')
           .delete()
           .eq('user_id', userId)
-          .eq('post_id', tweetId);
+          .eq('post_id', whistleId);
       } else {
         // Like
         await supabase
           .from('post_likes')
-          .insert({ user_id: userId, post_id: tweetId });
+          .insert({ user_id: userId, post_id: whistleId });
       }
     } catch (error) {
       // Revert on error
@@ -139,12 +139,12 @@ export function TweetActions({
           .from('post_boosts')
           .delete()
           .eq('user_id', userId)
-          .eq('post_id', tweetId);
+          .eq('post_id', whistleId);
       } else {
         // Repost
         await supabase
           .from('post_boosts')
-          .insert({ user_id: userId, post_id: tweetId });
+          .insert({ user_id: userId, post_id: whistleId });
       }
     } catch (error) {
       // Revert on error
@@ -167,14 +167,14 @@ export function TweetActions({
           .from('post_saves')
           .delete()
           .eq('user_id', userId)
-          .eq('post_id', tweetId);
+          .eq('post_id', whistleId);
         
         toast.success('Removed from bookmarks');
       } else {
         // Add bookmark
         await supabase
           .from('post_saves')
-          .insert({ user_id: userId, post_id: tweetId });
+          .insert({ user_id: userId, post_id: whistleId });
         
         toast.success('Added to bookmarks');
       }
@@ -189,13 +189,13 @@ export function TweetActions({
 
   const handleDelete = async (): Promise<void> => {
     try {
-      await removeTweet(tweetId);
-      await manageReply('decrement', tweetId);
+      await removeWhistle(whistleId);
+      await manageReply('decrement', whistleId);
       closeDeleteModal();
       back();
       toast.success('Tweet deleted');
     } catch (error) {
-      console.error('Error deleting tweet:', error);
+      console.error('Error deleting whistle:', error);
       toast.error('Failed to delete tweet');
     }
   };

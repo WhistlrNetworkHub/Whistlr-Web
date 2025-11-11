@@ -53,7 +53,7 @@ type InputOptionsProps = {
   modal?: boolean;
   inputLimit: number;
   inputLength: number;
-  isValidTweet: boolean;
+  isValidWhistle: boolean;
   isCharLimitExceeded: boolean;
   handleImageUpload: (
     e: ChangeEvent<HTMLInputElement> | ClipboardEvent<HTMLTextAreaElement>
@@ -65,7 +65,7 @@ export function InputOptions({
   modal,
   inputLimit,
   inputLength,
-  isValidTweet,
+  isValidWhistle,
   isCharLimitExceeded,
   handleImageUpload
 }: InputOptionsProps): JSX.Element {
@@ -139,7 +139,7 @@ export function InputOptions({
           className='accent-tab bg-main-accent px-4 py-1.5 font-bold text-white
                      enabled:hover:bg-main-accent/90
                      enabled:active:bg-main-accent/75'
-          disabled={!isValidTweet}
+          disabled={!isValidWhistle}
         >
           {reply ? 'Reply' : 'Whistle'}
         </Button>

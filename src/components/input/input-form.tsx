@@ -25,11 +25,11 @@ type InputFormProps = {
   inputRef: RefObject<HTMLTextAreaElement>;
   inputValue: string;
   replyModal?: boolean;
-  isValidTweet: boolean;
+  isValidWhistle: boolean;
   isUploadingImages: boolean;
-  sendTweet: () => Promise<void>;
+  sendWhistle: () => Promise<void>;
   handleFocus: () => void;
-  discardTweet: () => void;
+  discardWhistle: () => void;
   handleChange: ({
     target: { value }
   }: ChangeEvent<HTMLTextAreaElement>) => void;
@@ -61,11 +61,11 @@ export function InputForm({
   inputRef,
   replyModal,
   inputValue,
-  isValidTweet,
+  isValidWhistle,
   isUploadingImages,
-  sendTweet,
+  sendWhistle,
   handleFocus,
-  discardTweet,
+  discardWhistle,
   handleChange,
   handleImageUpload
 }: InputFormProps): JSX.Element {
@@ -78,11 +78,11 @@ export function InputForm({
     ctrlKey
   }: KeyboardEvent<HTMLTextAreaElement>): void => {
     if (!modal && key === 'Escape')
-      if (isValidTweet) {
+      if (isValidWhistle) {
         inputRef.current?.blur();
         openModal();
-      } else discardTweet();
-    else if (ctrlKey && key === 'Enter' && isValidTweet) void sendTweet();
+      } else discardWhistle();
+    else if (ctrlKey && key === 'Enter' && isValidWhistle) void sendWhistle();
   };
 
   const handleShowHideNav = (blur?: boolean) => (): void => {
@@ -104,7 +104,7 @@ export function InputForm({
   };
 
   const handleClose = (): void => {
-    discardTweet();
+    discardWhistle();
     closeModal();
   };
 

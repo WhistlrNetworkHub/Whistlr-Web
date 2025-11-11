@@ -4,12 +4,12 @@ import { useArrayDocument } from '@lib/hooks/useArrayDocument';
 import { useModal } from '@lib/hooks/useModal';
 import { usersCollection } from '@lib/supabase/collections';
 import { Modal } from '@components/modal/modal';
-import { TweetStatsModal } from '@components/modal/tweet-stats-modal';
-import { NumberStats } from '@components/tweet/number-stats';
+import { WhistleStatsModal } from '@components/modal/whistle-stats-modal';
+import { NumberStats } from '@components/whistle/number-stats';
 import { UserCards } from '@components/user/user-cards';
-import type { Tweet } from '@lib/types/tweet';
+import type { Tweet } from '@lib/types/whistle';
 
-type viewTweetStats = Pick<Tweet, 'userRetweets' | 'userLikes'> & {
+type viewWhistleStats = Pick<Tweet, 'userRetweets' | 'userLikes'> & {
   likeMove: number;
   tweetMove: number;
   replyMove: number;
@@ -23,7 +23,7 @@ export type StatsType = 'retweets' | 'likes';
 
 type Stats = [string, StatsType | null, number, number];
 
-export function ViewTweetStats({
+export function ViewWhistleStats({
   likeMove,
   userLikes,
   tweetMove,
@@ -33,7 +33,7 @@ export function ViewTweetStats({
   currentTweets,
   currentReplies,
   isStatsVisible
-}: viewTweetStats): JSX.Element {
+}: viewWhistleStats): JSX.Element {
   const [statsType, setStatsType] = useState<StatsType | null>(null);
 
   const { open, openModal, closeModal } = useModal();
@@ -68,14 +68,14 @@ export function ViewTweetStats({
         open={open}
         closeModal={handleClose}
       >
-        <TweetStatsModal statsType={statsType} handleClose={handleClose}>
+        <WhistleStatsModal statsType={statsType} handleClose={handleClose}>
           <UserCards
             follow
             type={statsType as StatsType}
             data={data}
             loading={loading}
           />
-        </TweetStatsModal>
+        </WhistleStatsModal>
       </Modal>
       {isStatsVisible && (
         <div

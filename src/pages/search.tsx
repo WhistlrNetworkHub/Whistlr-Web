@@ -279,7 +279,7 @@ export default function Search(): JSX.Element {
               <div className='mb-8'>
                 <div className='flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide'>
                   {results.slice(0, 4).map((post, index) => (
-                    <Link key={post.id} href={selectedCategory === 'Creators' ? `/user/${post.user?.username}` : `/tweet/${post.id}`}>
+                    <Link key={post.id} href={selectedCategory === 'Creators' ? `/user/${post.user?.username}` : `/whistle/${post.id}`}>
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -363,7 +363,7 @@ export default function Search(): JSX.Element {
               /* List layout for Whistles */
               <div className='space-y-3'>
                 {results.map((post, index) => (
-                  <Link key={post.id} href={`/tweet/${post.id}`}>
+                  <Link key={post.id} href={`/whistle/${post.id}`}>
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -506,7 +506,7 @@ export default function Search(): JSX.Element {
                   console.log(`Post ${index} display URL:`, displayUrl);
 
                   return (
-                    <Link key={post.id} href={`/tweet/${post.id}`}>
+                    <Link key={post.id} href={`/whistle/${post.id}`}>
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}

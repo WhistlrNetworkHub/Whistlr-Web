@@ -1,26 +1,26 @@
 import { useEffect } from 'react';
 
 import { useDocument } from '@lib/hooks/useDocument';
-import { tweetsCollection } from '@lib/supabase/collections';
-import { Tweet } from '@components/tweet/tweet';
+import { whistlesCollection } from '@lib/supabase/collections';
+import { Whistle } from '@components/whistle/whistle';
 import type { RefObject } from 'react';
 
-type ViewParentTweetProps = {
+type ViewParentWhistleProps = {
   parentId: string;
-  viewTweetRef: RefObject<HTMLElement>;
+  viewWhistleRef: RefObject<HTMLElement>;
 };
 
 export function ViewParentTweet({
   parentId,
-  viewTweetRef
-}: ViewParentTweetProps): JSX.Element | null {
-  const { data, loading } = useDocument(doc(tweetsCollection, parentId), {
+  viewWhistleRef
+}: ViewParentWhistleProps): JSX.Element | null {
+  const { data, loading } = useDocument(doc(whistlesCollection, parentId), {
     includeUser: true,
     allowNull: true
   });
 
   useEffect(() => {
-    if (!loading) viewTweetRef.current?.scrollIntoView();
+    if (!loading) viewWhistleRef.current?.scrollIntoView();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.id, loading]);
 
@@ -45,5 +45,5 @@ export function ViewParentTweet({
       </div>
     );
 
-  return <Tweet parentTweet {...data} />;
+  return <Whistle parentWhistle {...data} />;
 }

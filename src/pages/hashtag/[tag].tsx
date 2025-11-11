@@ -6,7 +6,7 @@ import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
 import { MainHeader } from '@components/home/main-header';
 import { MainContainer } from '@components/home/main-container';
-import { Tweet } from '@components/tweet/tweet';
+import { Whistle } from '@components/whistle/whistle';
 import { Loading } from '@components/ui/loading';
 import { Error } from '@components/ui/error';
 import type { ReactElement, ReactNode } from 'react';
@@ -45,8 +45,8 @@ export default function HashtagPage(): JSX.Element {
         ) : (
           <>
             <AnimatePresence mode='popLayout'>
-              {data.map((tweet) => (
-                <Tweet {...tweet} key={tweet.id} />
+              {data.map((whistle) => (
+                <Whistle {...whistle} key={whistle.id} />
               ))}
             </AnimatePresence>
             <LoadMore />

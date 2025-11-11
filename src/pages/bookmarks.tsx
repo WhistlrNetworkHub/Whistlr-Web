@@ -12,14 +12,14 @@ import { MainHeader } from '@components/home/main-header';
 import { MainContainer } from '@components/home/main-container';
 import { Modal } from '@components/modal/modal';
 import { ActionModal } from '@components/modal/action-modal';
-import { Tweet } from '@components/tweet/tweet';
-import { StatsEmpty } from '@components/tweet/stats-empty';
+import { Whistle } from '@components/whistle/whistle';
+import { StatsEmpty } from '@components/whistle/stats-empty';
 import { Button } from '@components/ui/button';
 import { ToolTip } from '@components/ui/tooltip';
 import { HeroIcon } from '@components/ui/hero-icon';
 import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
-import type { Tweet as TweetType } from '@lib/types/tweet';
+import type { Tweet as TweetType } from '@lib/types/whistle';
 
 export default function Bookmarks(): JSX.Element {
   const { user } = useAuth();
@@ -139,8 +139,8 @@ export default function Bookmarks(): JSX.Element {
           />
         ) : (
           <AnimatePresence mode='popLayout'>
-            {bookmarkedTweets.map((tweet) => (
-              <Tweet {...tweet} key={tweet.id} />
+            {bookmarkedTweets.map((whistle) => (
+              <Whistle {...whistle} key={whistle.id} />
             ))}
           </AnimatePresence>
         )}

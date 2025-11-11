@@ -4,7 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useDocument } from '@lib/hooks/useDocument';
 import { useCollection } from '@lib/hooks/useCollection';
 import { isPlural } from '@lib/utils';
-import { tweetsCollection, commentsCollection } from '@lib/supabase/collections';
+import { whistlesCollection, commentsCollection } from '@lib/supabase/collections';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
@@ -12,23 +12,23 @@ import { MainHeader } from '@components/home/main-header';
 import { MainContainer } from '@components/home/main-container';
 import { Error } from '@components/ui/error';
 import { Loading } from '@components/ui/loading';
-import { Tweet } from '@components/tweet/tweet';
+import { Whistle } from '@components/whistle/whistle';
 import { Input } from '@components/input/input';
 import type { ReactElement, ReactNode } from 'react';
 
-export default function TweetId(): JSX.Element {
+export default function WhistleId(): JSX.Element {
   const {
     query: { id },
     back
   } = useRouter();
 
-  const { data: tweetData, loading: tweetLoading } = useDocument(
-    tweetsCollection,
+  const { data: whistleData, loading: whistleLoading } = useDocument(
+    whistlesCollection,
     id as string,
     { includeUser: true, allowNull: true }
   );
 
-  const viewTweetRef = useRef<HTMLElement>(null);
+  const viewWhistleRef = useRef<HTMLElement>(null);
 
   // Fetch comments for this post
   const { data: commentsData, loading: commentsLoading } = useCollection(
@@ -41,7 +41,7 @@ export default function TweetId(): JSX.Element {
     }
   );
 
-  const { content, media_urls } = tweetData ?? {};
+  const { content, media_urls } = whistleData ?? {};
 
   // Parse media_urls
   let images: any = null;
@@ -55,8 +55,8 @@ export default function TweetId(): JSX.Element {
 
   const imagesLength = Array.isArray(images) ? images.length : 0;
 
-  const pageTitle = tweetData
-    ? `${tweetData.user?.full_name || tweetData.user?.username || 'User'} on Whistlr: "${
+  const pageTitle = whistleData
+    ? `${whistleData.user?.full_name || whistleData.user?.username || 'User'} on Whistlr: "${
         content ?? ''
       }" ${
         imagesLength > 1
@@ -74,9 +74,9 @@ export default function TweetId(): JSX.Element {
       />
       <MainHeader useActionButton title='Whistle' action={back} />
       <section>
-        {tweetLoading ? (
+        {whistleLoading ? (
           <Loading className='mt-5' />
-        ) : !tweetData ? (
+        ) : !whistleData ? (
           <>
             <Error message='Whistle not found' />
             {commentsData && (
@@ -87,18 +87,18 @@ export default function TweetId(): JSX.Element {
           </>
         ) : (
           <>
-            <Tweet {...tweetData} modal />
-            <Input reply parent={{ id: id as string, username: tweetData.user?.username || '' }} />
+            <Whistle {...whistleData} modal />
+            <Input reply parent={{ id: id as string, username: whistleData.user?.username || '' }} />
           </>
         )}
-        {!tweetLoading && tweetData && (
-          <section className='mt-0.5' ref={viewTweetRef}>
+        {!whistleLoading && whistleData && (
+          <section className='mt-0.5' ref={viewWhistleRef}>
             {commentsLoading ? (
               <Loading className='mt-5' />
             ) : commentsData && commentsData.length > 0 ? (
               <AnimatePresence mode='popLayout'>
                 {commentsData.map((comment) => (
-                  <Tweet {...comment} key={comment.id} modal />
+                  <Whistle {...comment} key={comment.id} modal />
                 ))}
               </AnimatePresence>
             ) : (
@@ -113,7 +113,7 @@ export default function TweetId(): JSX.Element {
   );
 }
 
-TweetId.getLayout = (page: ReactElement): ReactNode => (
+WhistleId.getLayout = (page: ReactElement): ReactNode => (
   <ProtectedLayout>
     <MainLayout>
       <HomeLayout>{page}</HomeLayout>

@@ -3,34 +3,34 @@
 import { useState, useEffect, useMemo } from 'react';
 import cn from 'clsx';
 import { manageRetweet, manageLike } from '@lib/supabase/utils';
-import { ViewTweetStats } from '@components/view/view-tweet-stats';
-import { TweetOption } from './tweet-option';
-import { TweetShare } from './tweet-share';
-import type { Tweet } from '@lib/types/tweet';
+import { ViewWhistleStats } from '@components/view/view-whistle-stats';
+import { WhistleOption } from './whistle-option';
+import { WhistleShare } from './whistle-share';
+import type { Tweet } from '@lib/types/whistle';
 
-type TweetStatsProps = Pick<
+type WhistleStatsProps = Pick<
   Tweet,
   'userLikes' | 'userRetweets' | 'userReplies'
 > & {
   reply?: boolean;
   userId: string;
   isOwner: boolean;
-  tweetId: string;
-  viewTweet?: boolean;
+  whistleId: string;
+  viewWhistle?: boolean;
   openModal?: () => void;
 };
 
-export function TweetStats({
+export function WhistleStats({
   reply,
   userId,
   isOwner,
-  tweetId,
+  whistleId,
   userLikes,
-  viewTweet,
+  viewWhistle,
   userRetweets,
   userReplies: totalReplies,
   openModal
-}: TweetStatsProps): JSX.Element {
+}: WhistleStatsProps): JSX.Element {
   const totalLikes = userLikes?.length || 0;
   const totalTweets = userRetweets?.length || 0;
 
@@ -71,8 +71,8 @@ export function TweetStats({
 
   return (
     <>
-      {viewTweet && (
-        <ViewTweetStats
+      {viewWhistle && (
+        <ViewWhistleStats
           likeMove={likeMove}
           userLikes={userLikes}
           tweetMove={tweetMove}
@@ -87,10 +87,10 @@ export function TweetStats({
       <div
         className={cn(
           'flex text-light-secondary inner:outline-none dark:text-dark-secondary',
-          viewTweet ? 'justify-around py-2' : 'max-w-md justify-between'
+          viewWhistle ? 'justify-around py-2' : 'max-w-md justify-between'
         )}
       >
-        <TweetOption
+        <WhistleOption
           className='hover:text-accent-blue focus-visible:text-accent-blue'
           iconClassName='group-hover:bg-accent-blue/10 group-active:bg-accent-blue/20 
                          group-focus-visible:bg-accent-blue/10 group-focus-visible:ring-accent-blue/80'
@@ -98,11 +98,11 @@ export function TweetStats({
           move={replyMove}
           stats={currentReplies}
           iconName='ChatBubbleOvalLeftIcon'
-          viewTweet={viewTweet}
+          viewWhistle={viewWhistle}
           onClick={openModal}
           disabled={reply}
         />
-        <TweetOption
+        <WhistleOption
           className={cn(
             'hover:text-accent-green focus-visible:text-accent-green',
             tweetIsRetweeted && 'text-accent-green [&>i>svg]:[stroke-width:2px]'
@@ -113,14 +113,14 @@ export function TweetStats({
           move={tweetMove}
           stats={currentTweets}
           iconName='ArrowPathRoundedSquareIcon'
-          viewTweet={viewTweet}
+          viewWhistle={viewWhistle}
           onClick={manageRetweet(
             tweetIsRetweeted ? 'unretweet' : 'retweet',
             userId,
-            tweetId
+            whistleId
           )}
         />
-        <TweetOption
+        <WhistleOption
           className={cn(
             'hover:text-accent-pink focus-visible:text-accent-pink',
             tweetIsLiked && 'text-accent-pink [&>i>svg]:fill-accent-pink'
@@ -131,16 +131,16 @@ export function TweetStats({
           move={likeMove}
           stats={currentLikes}
           iconName='HeartIcon'
-          viewTweet={viewTweet}
+          viewWhistle={viewWhistle}
           onClick={manageLike(
             tweetIsLiked ? 'unlike' : 'like',
             userId,
-            tweetId
+            whistleId
           )}
         />
-        <TweetShare userId={userId} tweetId={tweetId} viewTweet={viewTweet} />
+        <WhistleShare userId={userId} whistleId={whistleId} viewWhistle={viewWhistle} />
         {isOwner && (
-          <TweetOption
+          <WhistleOption
             className='hover:text-accent-blue focus-visible:text-accent-blue'
             iconClassName='group-hover:bg-accent-blue/10 group-active:bg-accent-blue/20 
                            group-focus-visible:bg-accent-blue/10 group-focus-visible:ring-accent-blue/80'

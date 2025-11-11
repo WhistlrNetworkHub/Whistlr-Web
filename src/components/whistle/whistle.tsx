@@ -5,26 +5,26 @@ import { useAuth } from '@lib/context/auth-context';
 import { useModal } from '@lib/hooks/useModal';
 import { delayScroll } from '@lib/utils';
 import { Modal } from '@components/modal/modal';
-import { TweetReplyModal } from '@components/modal/tweet-reply-modal';
+import { WhistleReplyModal } from '@components/modal/whistle-reply-modal';
 import { ImagePreview } from '@components/input/image-preview';
 import { UserAvatar } from '@components/user/user-avatar';
 import { UserTooltip } from '@components/user/user-tooltip';
 import { UserName } from '@components/user/user-name';
 import { UserUsername } from '@components/user/user-username';
-import { TweetActions } from './tweet-actions';
-import { TweetStatus } from './tweet-status';
-import { TweetStats } from './tweet-stats';
-import { TweetDate } from './tweet-date';
+import { WhistleActions } from './whistle-actions';
+import { WhistleStatus } from './whistle-status';
+import { WhistleStats } from './whistle-stats';
+import { WhistleDate } from './whistle-date';
 import type { Variants } from 'framer-motion';
-import type { Tweet } from '@lib/types/tweet';
+import type { Whistle } from '@lib/types/whistle';
 import type { User } from '@lib/types/user';
 
-export type TweetProps = Tweet & {
+export type WhistleProps = Whistle & {
   user?: User;
   modal?: boolean;
   pinned?: boolean;
   profile?: User | null;
-  parentTweet?: boolean;
+  parentWhistle?: boolean;
 };
 
 export const variants: Variants = {
@@ -33,9 +33,9 @@ export const variants: Variants = {
   exit: { opacity: 0, transition: { duration: 0.2 } }
 };
 
-export function Tweet(tweetData: TweetProps): JSX.Element {
+export function Whistle(whistleData: WhistleProps): JSX.Element {
   const {
-    id: tweetId,
+    id: whistleId,
     content,
     media_urls,
     modal,
@@ -43,22 +43,22 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
     profile,
     author_id,
     created_at,
-    parentTweet,
+    parentWhistle,
     comments_count,
     likes_count,
     reposts_count,
-    user: tweetUser
-  } = tweetData;
+    user: whistleUser
+  } = whistleData;
 
   const { user } = useAuth();
   const { open, openModal, closeModal } = useModal();
 
-  const tweetLink = `/tweet/${tweetId}`;
+  const whistleLink = `/whistle/${whistleId}`;
   const userId = user?.id as string;
   const isOwner = userId === author_id;
 
   // Extract user data
-  const userData = tweetUser || profile;
+  const userData = whistleUser || profile;
   const {
     id: ownerId,
     full_name,
@@ -72,7 +72,7 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
   if (media_urls && Array.isArray(media_urls) && media_urls.length > 0) {
     // Transform to format expected by ImagePreview
     images = media_urls.map((url, index) => ({
-      id: `${tweetId}-${index}`,
+      id: `${whistleId}-${index}`,
       src: url,
       alt: `Image ${index + 1}`
     }));
@@ -83,7 +83,7 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
       {...(!modal ? { ...variants, layout: 'position' } : {})}
       animate={{
         ...variants.animate,
-        ...(parentTweet && { transition: { duration: 0.2 } })
+        ...(parentWhistle && { transition: { duration: 0.2 } })
       }}
     >
       <Modal
@@ -92,15 +92,15 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
         open={open}
         closeModal={closeModal}
       >
-        <TweetReplyModal tweet={tweetData} closeModal={closeModal} />
+        <WhistleReplyModal whistle={whistleData} closeModal={closeModal} />
       </Modal>
       <Link
-        href={tweetLink}
+        href={whistleLink}
         scroll={false}
         className={cn(
           `accent-tab hover-card relative flex flex-col
            gap-y-4 px-4 py-3 outline-none duration-200`,
-          parentTweet
+          parentWhistle
             ? 'mt-0.5 pt-2.5 pb-0'
             : 'border-b border-light-border dark:border-dark-border'
         )}
@@ -110,9 +110,9 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
         <div className='grid grid-cols-[auto,1fr] gap-x-3 gap-y-1'>
           <AnimatePresence initial={false}>
             {modal ? null : pinned ? (
-              <TweetStatus type='pin'>
+              <WhistleStatus type='pin'>
                 <p className='text-sm font-bold'>Pinned Whistle</p>
-              </TweetStatus>
+              </WhistleStatus>
             ) : null}
           </AnimatePresence>
           <div className='flex flex-col items-center gap-2'>
@@ -124,7 +124,7 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
                 isLink={modal ? true : false}
               />
             </UserTooltip>
-            {parentTweet && (
+            {parentWhistle && (
               <i className='hover-animation h-full w-0.5 bg-light-line-reply dark:bg-dark-line-reply' />
             )}
           </div>
@@ -141,38 +141,38 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
                 </UserTooltip>
                 <UserUsername username={username || ''} />
               </div>
-              <TweetDate createdAt={created_at} tweetLink={tweetLink} />
+              <WhistleDate createdAt={created_at} whistleLink={whistleLink} />
             </div>
             <div className='flex flex-col gap-2'>
               {content && <p className='whitespace-pre-wrap break-words'>{content}</p>}
               {images && Array.isArray(images) && images.length > 0 && (
                 <ImagePreview
-                  tweet
+                  whistle
                   imagesPreview={images}
                   previewCount={images.length}
                 />
               )}
             </div>
             {!modal && (
-              <TweetActions
+              <WhistleActions
                 isOwner={isOwner}
                 ownerId={author_id || ''}
-                tweetId={tweetId}
+                whistleId={whistleId}
                 username={username || ''}
                 userLikesId={likes_count}
                 userRetweetsId={reposts_count}
-                tweetLink={tweetLink}
-                openModal={!parentTweet ? openModal : undefined}
+                whistleLink={whistleLink}
+                openModal={!parentWhistle ? openModal : undefined}
               />
             )}
           </div>
         </div>
       </Link>
       {modal && (
-        <TweetStats
+        <WhistleStats
           userId={userId}
           isOwner={isOwner}
-          tweetId={tweetId}
+          whistleId={whistleId}
           reply={false}
           userLikes={[]}
           userRetweets={[]}
@@ -182,3 +182,7 @@ export function Tweet(tweetData: TweetProps): JSX.Element {
     </motion.article>
   );
 }
+
+// Backward compatibility export
+export { Whistle as Tweet };
+export type { WhistleProps as TweetProps };

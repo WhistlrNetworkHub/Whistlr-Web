@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { NumberStats } from '@components/tweet/number-stats';
+import { NumberStats } from '@components/whistle/number-stats';
 
 type UserFollowStatsProps = {
   following_count: number;
@@ -72,4 +72,6 @@ export function UserFollowStats({
       ))}
     </div>
   );
+}
+
 }

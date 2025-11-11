@@ -4,11 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import cn from 'clsx';
 import { toast } from 'react-hot-toast';
 import { supabase } from '@lib/supabase/client';
-import { tweetsCollection, commentsCollection } from '@lib/supabase/collections';
+import { whistlesCollection, commentsCollection } from '@lib/supabase/collections';
 import {
   manageReply,
   uploadImages,
-  manageTotalTweets,
+  manageTotalWhistles,
   manageTotalPhotos
 } from '@lib/supabase/utils';
 import { useAuth } from '@lib/context/auth-context';
@@ -69,7 +69,7 @@ export function Input({
     []
   );
 
-  const sendTweet = async (): Promise<void> => {
+  const sendWhistle = async (): Promise<void> => {
     if (!user) return;
 
     inputRef.current?.blur();
@@ -119,7 +119,7 @@ export function Input({
         };
 
         const { data: newPost, error } = await supabase
-          .from(tweetsCollection)
+          .from(whistlesCollection)
           .insert(postData)
           .select('id')
           .single();
@@ -132,7 +132,7 @@ export function Input({
 
         // Update user stats
         await Promise.all([
-          manageTotalTweets('increment', userId),
+          manageTotalWhistles('increment', userId),
           mediaUrls && manageTotalPhotos('increment', userId)
         ]);
 
@@ -140,7 +140,7 @@ export function Input({
           () => (
             <span className='flex gap-2'>
               Your Tweet was sent
-              <Link href={`/tweet/${newPost.id}`} className='custom-underline font-bold'>
+              <Link href={`/whistle/${newPost.id}`} className='custom-underline font-bold'>
                 View
               </Link>
             </span>
@@ -151,7 +151,7 @@ export function Input({
 
       // Clean up
       if (!modal && !replyModal) {
-        discardTweet();
+        discardWhistle();
       }
 
       if (closeModal) closeModal();
@@ -206,7 +206,7 @@ export function Input({
     setImagesPreview([]);
   };
 
-  const discardTweet = (): void => {
+  const discardWhistle = (): void => {
     setInputValue('');
     setVisited(false);
     cleanImage();
@@ -220,24 +220,24 @@ export function Input({
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    void sendTweet();
+    void sendWhistle();
   };
 
   const handleFocus = (): void => setVisited(!loading);
 
   const formId = 'tweet-form';
 
-  const isValidTweet = !!inputValue.trim() || isUploadingImages;
+  const isValidWhistle = !!inputValue.trim() || isUploadingImages;
   const isCharLimitExceeded = inputValue.length > 280;
 
-  const sendTweetButton = (
+  const sendWhistleButton = (
     <Button
       type='submit'
       className='accent-tab bg-main-accent px-4 py-1.5 font-bold text-white
                  enabled:hover:bg-main-accent/90 enabled:active:bg-main-accent/75
                  disabled:brightness-75 disabled:cursor-not-allowed'
       form={formId}
-      disabled={!isValidTweet || isCharLimitExceeded || loading}
+      disabled={!isValidWhistle || isCharLimitExceeded || loading}
     >
       Whistle
     </Button>
@@ -279,10 +279,10 @@ export function Input({
               loading={loading}
               inputRef={inputRef}
               inputValue={inputValue}
-              isValidTweet={isValidTweet}
+              isValidWhistle={isValidWhistle}
               isCharLimitExceeded={isCharLimitExceeded}
               replyModal={replyModal}
-              sendTweetButton={sendTweetButton}
+              sendWhistleButton={sendWhistleButton}
               handleFocus={handleFocus}
               handleChange={handleChange}
               handleImageUpload={handleImageUpload}
@@ -302,10 +302,10 @@ export function Input({
                 reply={reply}
                 modal={modal}
                 inputValue={inputValue}
-                isValidTweet={isValidTweet}
+                isValidWhistle={isValidWhistle}
                 isCharLimitExceeded={isCharLimitExceeded}
                 replyModal={replyModal}
-                sendTweetButton={sendTweetButton}
+                sendWhistleButton={sendWhistleButton}
                 handleImageUpload={handleImageUpload}
               />
             )}

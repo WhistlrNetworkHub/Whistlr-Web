@@ -188,7 +188,7 @@ export async function manageFollow(
 /**
  * Remove post
  */
-export async function removeTweet(postId: string): Promise<void> {
+export async function removeWhistle(postId: string): Promise<void> {
   const { error } = await supabase
     .from('posts')
     .update({ deleted_at: new Date().toISOString() })
@@ -262,7 +262,7 @@ export async function manageReply(
 /**
  * Manage total tweets count
  */
-export async function manageTotalTweets(
+export async function manageTotalWhistles(
   action: 'increment' | 'decrement',
   userId: string
 ): Promise<void> {

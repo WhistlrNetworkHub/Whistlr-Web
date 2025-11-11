@@ -1,29 +1,29 @@
 import { useMemo, useEffect } from 'react';
 
 import { useDocument } from '@lib/hooks/useDocument';
-import { tweetsCollection } from '@lib/supabase/collections';
+import { whistlesCollection } from '@lib/supabase/collections';
 import { getRandomId } from '@lib/random';
-import { Tweet } from './tweet';
-import type { LoadedParents } from './tweet-with-parent';
+import { Whistle } from './tweet';
+import type { LoadedParents } from './whistle-with-parent';
 
-type TweetParentProps = {
+type WhistleParentProps = {
   parentId: string;
   loadedParents: LoadedParents;
   addParentId: (parentId: string, componentId: string) => void;
 };
 
-export function TweetParent({
+export function WhistleParent({
   parentId,
   loadedParents,
   addParentId
-}: TweetParentProps): JSX.Element | null {
+}: WhistleParentProps): JSX.Element | null {
   const componentId = useMemo(getRandomId, []);
 
   const isParentAlreadyLoaded = loadedParents.some(
     (child) => child.childId === componentId
   );
 
-  const { data, loading } = useDocument(doc(tweetsCollection, parentId), {
+  const { data, loading } = useDocument(doc(whistlesCollection, parentId), {
     includeUser: true,
     allowNull: true,
     disabled: isParentAlreadyLoaded
@@ -36,5 +36,5 @@ export function TweetParent({
 
   if (loading || !isParentAlreadyLoaded || !data) return null;
 
-  return <Tweet parentTweet {...data} />;
+  return <Whistle parentWhistle {...data} />;
 }

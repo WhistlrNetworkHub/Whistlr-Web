@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { Tweet } from './tweet';
-import { TweetParent } from './tweet-parent';
-import type { TweetWithUser } from '@lib/types/tweet';
+import { Whistle } from './tweet';
+import { WhistleParent } from './whistle-parent';
+import type { WhistleWithUser } from '@lib/types/whistle';
 
-type TweetWithParentProps = {
-  data: TweetWithUser[];
+type WhistleWithParentProps = {
+  data: WhistleWithUser[];
 };
 
 export type LoadedParents = Record<'parentId' | 'childId', string>[];
 
-export function TweetWithParent({ data }: TweetWithParentProps): JSX.Element {
+export function WhistleWithParent({ data }: WhistleWithParentProps): JSX.Element {
   const [loadedParents, setLoadedParents] = useState<LoadedParents>([]);
 
   const addParentId = (parentId: string, targetChildId: string): void =>
@@ -25,16 +25,16 @@ export function TweetWithParent({ data }: TweetWithParentProps): JSX.Element {
 
   return (
     <>
-      {filteredData.map((tweet) => (
-        <div className='[&>article:nth-child(2)]:-mt-1' key={tweet.id}>
+      {filteredData.map((whistle) => (
+        <div className='[&>article:nth-child(2)]:-mt-1' key={whistle.id}>
           {tweet.parent && (
-            <TweetParent
+            <WhistleParent
               parentId={tweet.parent.id}
               loadedParents={loadedParents}
               addParentId={addParentId}
             />
           )}
-          <Tweet {...tweet} />
+          <Whistle {...whistle} />
         </div>
       ))}
     </>

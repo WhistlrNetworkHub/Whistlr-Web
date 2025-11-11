@@ -7,11 +7,11 @@ import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
 import { UserDataLayout } from '@components/layout/user-data-layout';
 import { UserHomeLayout } from '@components/layout/user-home-layout';
-import { Tweet } from '@components/tweet/tweet';
+import { Whistle } from '@components/whistle/whistle';
 import { Loading } from '@components/ui/loading';
-import { StatsEmpty } from '@components/tweet/stats-empty';
+import { StatsEmpty } from '@components/whistle/stats-empty';
 import type { ReactElement, ReactNode } from 'react';
-import type { Tweet as TweetType } from '@lib/types/tweet';
+import type { Tweet as TweetType } from '@lib/types/whistle';
 
 export default function UserLikes(): JSX.Element {
   const { user } = useUser();
@@ -77,8 +77,8 @@ export default function UserLikes(): JSX.Element {
         />
       ) : (
         <AnimatePresence mode='popLayout'>
-          {likedPosts.map((tweet) => (
-            <Tweet {...tweet} key={tweet.id} />
+          {likedPosts.map((whistle) => (
+            <Whistle {...whistle} key={whistle.id} />
           ))}
         </AnimatePresence>
       )}

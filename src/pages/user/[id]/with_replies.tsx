@@ -1,16 +1,16 @@
 import { AnimatePresence } from 'framer-motion';
 import { useCollection } from '@lib/hooks/useCollection';
 import { useDocument } from '@lib/hooks/useDocument';
-import { tweetsCollection, commentsCollection } from '@lib/supabase/collections';
+import { whistlesCollection, commentsCollection } from '@lib/supabase/collections';
 import { useUser } from '@lib/context/user-context';
 import { UserLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
 import { UserDataLayout } from '@components/layout/user-data-layout';
 import { UserHomeLayout } from '@components/layout/user-home-layout';
-import { Tweet } from '@components/tweet/tweet';
+import { Whistle } from '@components/whistle/whistle';
 import { Loading } from '@components/ui/loading';
-import { StatsEmpty } from '@components/tweet/stats-empty';
+import { StatsEmpty } from '@components/whistle/stats-empty';
 import type { ReactElement, ReactNode } from 'react';
 
 export default function UserWithReplies(): JSX.Element {
@@ -19,7 +19,7 @@ export default function UserWithReplies(): JSX.Element {
   const { id, full_name, username, pinned_post_id } = user ?? {};
 
   const { data: pinnedData } = useDocument(
-    tweetsCollection,
+    whistlesCollection,
     pinned_post_id ?? 'null',
     {
       disabled: !pinned_post_id,
@@ -30,7 +30,7 @@ export default function UserWithReplies(): JSX.Element {
 
   // Fetch all posts by user
   const { data: posts, loading: postsLoading } = useCollection(
-    tweetsCollection,
+    whistlesCollection,
     {
       filter: { column: 'author_id', value: id },
       orderBy: { column: 'created_at', ascending: false }
@@ -67,10 +67,10 @@ export default function UserWithReplies(): JSX.Element {
       ) : (
         <AnimatePresence mode='popLayout'>
           {pinnedData && (
-            <Tweet pinned {...pinnedData} key={`pinned-${pinnedData.id}`} />
+            <Whistle pinned {...pinnedData} key={`pinned-${pinnedData.id}`} />
           )}
-          {posts?.map((tweet) => (
-            <Tweet {...tweet} key={tweet.id} />
+          {posts?.map((whistle) => (
+            <Whistle {...whistle} key={whistle.id} />
           ))}
         </AnimatePresence>
       )}
