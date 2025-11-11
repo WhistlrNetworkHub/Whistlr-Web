@@ -27,10 +27,10 @@ export default function Home(): JSX.Element {
 
   return (
     <MainContainer>
-      <SEO title='Home / Whistlr' />
+      <SEO title='Chattr / Whistlr' />
       <MainHeader
         useMobileSidebar
-        title='Home'
+        title='Chattr'
         className='flex items-center justify-between'
       />
       {!isMobile && <Input />}

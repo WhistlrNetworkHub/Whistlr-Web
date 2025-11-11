@@ -130,12 +130,12 @@ export function InputForm({
         {isVisibilityShown && (
           <motion.button
             type='button'
-            className='custom-button accent-tab accent-bg-tab flex cursor-not-allowed items-center gap-1
-                       self-start border border-light-line-reply py-0 px-3 text-main-accent
-                       hover:bg-main-accent/10 active:bg-main-accent/20 dark:border-light-secondary'
+            className='custom-button accent-tab flex cursor-not-allowed items-center gap-1
+                       self-start rounded-full glass-morphism-strong px-4 py-2 text-white shadow-lg
+                       hover:bg-main-accent/10 active:bg-main-accent/20'
             {...fromTop}
           >
-            <p className='font-bold'>Everyone</p>
+            <p className='font-bold text-sm'>Everyone</p>
             <HeroIcon className='h-4 w-4' iconName='ChevronDownIcon' />
           </motion.button>
         )}
@@ -146,7 +146,7 @@ export function InputForm({
                        placeholder:text-light-secondary dark:placeholder:text-dark-secondary'
             value={inputValue}
             placeholder={
-              reply || replyModal ? 'Tweet your reply' : "What's happening?"
+              reply || replyModal ? 'Tweet your reply' : "What's Whistling Around In Your Head?"
             }
             onBlur={handleShowHideNav(true)}
             minRows={loading ? 1 : modal && !isUploadingImages ? 3 : 1}
