@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Popover } from '@headlessui/react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -63,35 +63,39 @@ export function TweetActions({
   const userId = user?.id as string;
 
   // Check if user has liked/reposted/bookmarked this post
-  useMemo(async () => {
+  useEffect(() => {
     if (!userId) return;
 
-    // Check liked
-    const { data: likeData } = await supabase
-      .from('likes')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('post_id', tweetId)
-      .single();
-    setLiked(!!likeData);
+    const checkStatus = async () => {
+      // Check liked
+      const { data: likeData } = await supabase
+        .from('post_likes')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('post_id', tweetId)
+        .maybeSingle();
+      setLiked(!!likeData);
 
-    // Check reposted
-    const { data: repostData } = await supabase
-      .from('reposts')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('original_post_id', tweetId)
-      .single();
-    setReposted(!!repostData);
+      // Check reposted
+      const { data: repostData } = await supabase
+        .from('post_boosts')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('post_id', tweetId)
+        .maybeSingle();
+      setReposted(!!repostData);
 
-    // Check bookmarked
-    const { data: bookmarkData } = await supabase
-      .from('post_saves')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('post_id', tweetId)
-      .single();
-    setBookmarked(!!bookmarkData);
+      // Check bookmarked
+      const { data: bookmarkData } = await supabase
+        .from('post_saves')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('post_id', tweetId)
+        .maybeSingle();
+      setBookmarked(!!bookmarkData);
+    };
+
+    checkStatus();
   }, [userId, tweetId]);
 
   const handleLike = async (): Promise<void> => {
