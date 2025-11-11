@@ -825,3 +825,37 @@ UserProfile.getLayout = (page: ReactElement): ReactNode => (
     </MainLayout>
   </ProtectedLayout>
 );
+
+    <section>
+      {loading ? (
+        <Loading className='mt-5' />
+      ) : posts.length === 0 ? (
+        <StatsEmpty
+          title={`@${username as string} hasn't posted yet`}
+          description='When they do, their posts will show up here.'
+        />
+      ) : (
+        <AnimatePresence mode='popLayout'>
+          {pinnedData && (
+            <Tweet pinned {...pinnedData} key={`pinned-${pinnedData.id}`} />
+          )}
+          {posts.map((tweet) => (
+            <Tweet {...tweet} profile={user} key={tweet.id} />
+          ))}
+        </AnimatePresence>
+      )}
+    </section>
+  );
+}
+UserTweets.getLayout = (page: ReactElement): ReactNode => (
+  <ProtectedLayout>
+    <MainLayout>
+      <UserLayout>
+        <UserDataLayout>
+          <UserHomeLayout>{page}</UserHomeLayout>
+        </UserDataLayout>
+      </UserLayout>
+    </MainLayout>
+  </ProtectedLayout>
+);
+
