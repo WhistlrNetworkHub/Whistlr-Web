@@ -207,19 +207,6 @@ export default function UserProfile(): JSX.Element {
   return (
     <MainContainer>
       <SEO title={`${profile.full_name || profile.username} (@${profile.username}) / Whistlr`} />
-      
-      {/* Floating Header with Username on Right */}
-      <div className='absolute top-6 left-0 right-0 z-50 flex items-center justify-between px-6'>
-        <MainHeader 
-          useActionButton
-          title=''
-          className='relative p-0 bg-transparent'
-          disableSticky
-        />
-        <div className='px-3 py-2 rounded-2xl glass-morphism-strong border border-white/20'>
-          <span className='text-sm font-medium text-white'>@{profile.username}</span>
-        </div>
-      </div>
 
       <FollowersModal
         open={followModalOpen}
@@ -247,9 +234,20 @@ export default function UserProfile(): JSX.Element {
           {/* Gradient Overlay */}
           <div className='absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80' />
 
-          {/* Top Overlay - Follow/Edit Button Only */}
+          {/* Top Left - Back Button (only for other users) */}
+          {!isOwnProfile && (
+            <div className='absolute top-5 left-5'>
+              <Button
+                className='p-2 rounded-full glass-morphism-strong border border-white/20 hover:border-white/30 transition-all'
+                onClick={() => router.back()}
+              >
+                <HeroIcon iconName='ArrowLeftIcon' className='h-5 w-5 text-white' />
+              </Button>
+            </div>
+          )}
+
+          {/* Top Right - Follow/Edit Button */}
           <div className='absolute top-5 right-5'>
-            {/* Follow/Edit Button */}
             {isOwnProfile ? (
               <Button
                 className='px-4 py-2 rounded-2xl glass-morphism-strong border border-white/20 text-white font-semibold text-sm'
@@ -271,19 +269,8 @@ export default function UserProfile(): JSX.Element {
             )}
           </div>
 
-          {/* Bottom Left Overlay - Username & Display Name */}
+          {/* Bottom Left - Display Name */}
           <div className='absolute bottom-5 left-5'>
-            {/* Username Pill */}
-            <div className='inline-flex items-center gap-2 px-3 py-2 rounded-2xl glass-morphism-strong border border-white/20 mb-2'>
-              <img
-                src={avatarUrl}
-                alt={profile.username}
-                className='w-7 h-7 rounded-full object-cover'
-              />
-              <span className='text-sm font-medium text-white'>@{profile.username}</span>
-            </div>
-
-            {/* Display Name */}
             <div className='flex items-center gap-2'>
               <h1 className='text-3xl font-bold text-white drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                 {profile.full_name || profile.username}
@@ -294,32 +281,27 @@ export default function UserProfile(): JSX.Element {
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Mood/Status */}
-            {profile.bio && (
-              <div className='inline-block px-3 py-1.5 rounded-2xl glass-morphism-strong border border-white/20 mt-2'>
+          {/* Bottom Right - Mood/Status */}
+          {profile.bio && (
+            <div className='absolute bottom-5 right-5'>
+              <div className='inline-block px-3 py-1.5 rounded-2xl glass-morphism-strong border border-white/20'>
                 <span className='text-xs font-medium text-white'>✨ Chill AF</span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Profile Info Section */}
         <div className='px-6 py-6'>
           {/* Username */}
-          <p className='text-white/80 text-base mb-2'>@{profile.username}</p>
+          <p className='text-white/80 text-base mb-4'>@{profile.username}</p>
 
-          {/* Title/Category */}
+          {/* Bio - Floating with no background */}
           {profile.bio && (
-            <div className='inline-block px-3 py-1 rounded-lg glass-morphism border border-white/10 mb-4'>
-              <p className='text-sm font-medium text-white/90'>{profile.bio.split('\n')[0]}</p>
-            </div>
-          )}
-
-          {/* Bio */}
-          {profile.bio && profile.bio.includes('\n') && (
             <p className='text-white/90 text-base mb-4 leading-relaxed'>
-              {profile.bio.split('\n').slice(1).join('\n')}
+              {profile.bio}
             </p>
           )}
 
