@@ -68,17 +68,17 @@ export default function TweetId(): JSX.Element {
   return (
     <MainContainer>
       <SEO
-        title={pageTitle ?? 'Tweet / Whistlr'}
+        title={pageTitle ?? 'Whistle / Whistlr'}
         description={content ?? undefined}
         image={imagesLength === 1 && images ? images[0] : undefined}
       />
-      <MainHeader useActionButton title='Tweet' action={back} />
+      <MainHeader useActionButton title='Whistle' action={back} />
       <section>
         {tweetLoading ? (
           <Loading className='mt-5' />
         ) : !tweetData ? (
           <>
-            <Error message='Tweet not found' />
+            <Error message='Whistle not found' />
             {commentsData && (
               <p className='m-4 text-center text-sm text-light-secondary dark:text-dark-secondary'>
                 But you can see other replies

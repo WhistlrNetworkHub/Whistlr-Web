@@ -149,8 +149,8 @@ export function TweetActions({
     } catch (error) {
       // Revert on error
       setReposted(reposted);
-      console.error('Error toggling repost:', error);
-      toast.error('Failed to update repost');
+      console.error('Error toggling boost:', error);
+      toast.error('Failed to update boost');
     }
   };
 
@@ -252,7 +252,7 @@ export function TweetActions({
             <HeroIcon className='h-5 w-5' iconName='ArrowPathRoundedSquareIcon' />
           </i>
           <p className='text-xs'>{userRetweetsId || 0}</p>
-          <ToolTip tip={reposted ? 'Undo Repost' : 'Repost'} />
+          <ToolTip tip={reposted ? 'Undo Boost' : 'Boost'} />
         </Button>
         <Button
           className={cn(

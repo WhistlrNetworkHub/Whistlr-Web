@@ -126,7 +126,7 @@ export function Input({
 
         if (error) {
           console.error('Error creating post:', error);
-          toast.error('Failed to send tweet');
+          toast.error('Failed to send whistle');
           return;
         }
 
@@ -156,8 +156,8 @@ export function Input({
 
       if (closeModal) closeModal();
     } catch (error) {
-      console.error('Error sending tweet:', error);
-      toast.error('Failed to send tweet');
+      console.error('Error sending whistle:', error);
+      toast.error('Failed to send whistle');
     } finally {
       setLoading(false);
     }
@@ -239,7 +239,7 @@ export function Input({
       form={formId}
       disabled={!isValidTweet || isCharLimitExceeded || loading}
     >
-      Tweet
+      Whistle
     </Button>
   );
 
