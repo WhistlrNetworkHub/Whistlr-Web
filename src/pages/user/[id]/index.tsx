@@ -207,11 +207,19 @@ export default function UserProfile(): JSX.Element {
   return (
     <MainContainer>
       <SEO title={`${profile.full_name || profile.username} (@${profile.username}) / Whistlr`} />
-      <MainHeader 
-        useActionButton
-        title={profile.full_name || profile.username} 
-        className='glass-morphism-strong border-b border-white/5'
-      />
+      
+      {/* Floating Header with Username on Right */}
+      <div className='absolute top-6 left-0 right-0 z-50 flex items-center justify-between px-6'>
+        <MainHeader 
+          useActionButton
+          title=''
+          className='relative p-0 bg-transparent'
+          disableSticky
+        />
+        <div className='px-3 py-2 rounded-2xl glass-morphism-strong border border-white/20'>
+          <span className='text-sm font-medium text-white'>@{profile.username}</span>
+        </div>
+      </div>
 
       <FollowersModal
         open={followModalOpen}
@@ -223,8 +231,8 @@ export default function UserProfile(): JSX.Element {
 
       {/* iOS-Style Profile Header with Cover Banner */}
       <div className='relative'>
-        {/* Cover Photo Banner - Taller */}
-        <div className='relative h-[550px] mx-4 mt-4 rounded-3xl overflow-hidden'>
+        {/* Cover Photo Banner - Slightly Taller */}
+        <div className='relative h-[580px] mx-4 mt-4 rounded-3xl overflow-hidden'>
           {/* Cover Image */}
           <img
             src={coverUrl}
@@ -263,8 +271,8 @@ export default function UserProfile(): JSX.Element {
             )}
           </div>
 
-          {/* Bottom Right Overlay - Username & Display Name */}
-          <div className='absolute bottom-5 right-5 text-right'>
+          {/* Bottom Left Overlay - Username & Display Name */}
+          <div className='absolute bottom-5 left-5'>
             {/* Username Pill */}
             <div className='inline-flex items-center gap-2 px-3 py-2 rounded-2xl glass-morphism-strong border border-white/20 mb-2'>
               <img
@@ -276,7 +284,7 @@ export default function UserProfile(): JSX.Element {
             </div>
 
             {/* Display Name */}
-            <div className='flex items-center justify-end gap-2'>
+            <div className='flex items-center gap-2'>
               <h1 className='text-3xl font-bold text-white drop-shadow-lg' style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                 {profile.full_name || profile.username}
               </h1>
@@ -390,26 +398,10 @@ export default function UserProfile(): JSX.Element {
               <p className='text-sm text-white/60 text-center'>circles joined</p>
             </button>
           </div>
-
-          {/* Action Buttons Row */}
-          <div className='flex gap-3 mt-6'>
-            <button className='flex-1 py-3 rounded-2xl glass-morphism border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2'>
-              <HeroIcon iconName='PencilIcon' className='h-5 w-5 text-white/80' />
-            </button>
-            <button className='flex-1 py-3 rounded-2xl glass-morphism border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2'>
-              <HeroIcon iconName='VideoCameraIcon' className='h-5 w-5 text-white/80' />
-            </button>
-            <button className='flex-1 py-3 rounded-2xl glass-morphism border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2'>
-              <HeroIcon iconName='ShoppingCartIcon' className='h-5 w-5 text-white/80' />
-            </button>
-            <button className='flex-1 py-3 rounded-2xl glass-morphism border border-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2'>
-              <HeroIcon iconName='MusicalNoteIcon' className='h-5 w-5 text-white/80' />
-            </button>
-          </div>
         </div>
 
         {/* Tabs */}
-        <div className='border-b border-white/5 mx-6'>
+        <div className='border-b border-white/5 mx-6 mt-6'>
           <div className='flex gap-8'>
             {[
               { key: 'posts', label: 'Posts' },
